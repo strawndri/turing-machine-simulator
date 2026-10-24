@@ -1,8 +1,8 @@
 (() => {
 'use strict';
-const R = 28, LIMIT = 5000, KEY = 'turing-machine-simulator-v1', COLW = 46, MAXK = 4;
+const R = 28, LIMIT = 5000, KEY = 'turing-machine-simulator-v1', COLW = 42, MAXK = 4;
 const LANG_KEY = 'turing-machine-simulator-lang', THEME_KEY = 'turing-machine-simulator-theme';
-const THEMES = ['auto', 'light', 'dark', 'blueprint', 'terminal', 'sepia'];
+const THEMES = ['light', 'dark'];
 let lang = 'pt';
 const tr = (k, ...a) => { const v = I18N[lang][k] ?? I18N.pt[k] ?? k; return typeof v === 'function' ? v(...a) : v; };
 const $ = s => document.querySelector(s);
@@ -225,7 +225,7 @@ function toast(msg) {
 /* ---------- diagram geometry ---------- */
 function geom(e) {
   const a = S(e.from), b = S(e.to), k = e.rules.length;
-  const w = Math.max(...e.rules.map(r => ruleText(r).length)) * 6.6;
+  const w = Math.max(...e.rules.map(r => ruleText(r).length)) * 7.6;
   let P0, P1, C, mid, t, s, path, nb = null;
   if (a === b) {
     const A = (e.angle ?? -90) * Math.PI / 180, sp = .5;
@@ -280,8 +280,8 @@ function fit() {
   const x0 = Math.min(...pts.map(p => p[0])), x1 = Math.max(...pts.map(p => p[0]));
   const y0 = Math.min(...pts.map(p => p[1])), y1 = Math.max(...pts.map(p => p[1]));
   const top = 58, gap = 18;
-  const k = clamp(Math.min((r.width - 2 * gap) / (x1 - x0), (r.height - top - 40) / (y1 - y0)), .3, 1.3);
-  view = { k, x: (r.width - (x1 - x0) * k) / 2 - x0 * k, y: top + (r.height - top - 40 - (y1 - y0) * k) / 2 - y0 * k };
+  const k = clamp(Math.min((r.width - 2 * gap) / (x1 - x0), (r.height - top - 58) / (y1 - y0)), .3, 1.3);
+  view = { k, x: (r.width - (x1 - x0) * k) / 2 - x0 * k, y: top + (r.height - top - 58 - (y1 - y0) * k) / 2 - y0 * k };
   renderCanvas();
 }
 function zoomAt(factor, cx, cy) {
@@ -327,8 +327,7 @@ function renderCanvas() {
     const x = Math.min(drag.p0.x, drag.p1.x), y = Math.min(drag.p0.y, drag.p1.y);
     mq = `<rect class="marquee" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${Math.abs(drag.p1.x - drag.p0.x).toFixed(1)}" height="${Math.abs(drag.p1.y - drag.p0.y).toFixed(1)}"/>`;
   }
-  const rc = drag && drag.moved ? '' : ' class="rough"';
-  vp.innerHTML = `<g${rc}>${lines}</g>` + init + gh + `<g${rc}>${nodes}</g>` + `<g>${texts}</g>` + labels + mq;
+  vp.innerHTML = lines + init + gh + nodes + texts + labels + mq;
   vp.setAttribute('transform', `translate(${view.x.toFixed(1)} ${view.y.toFixed(1)}) scale(${view.k.toFixed(4)})`);
   const g = 22 * view.k;
   board.style.backgroundSize = `${g}px ${g}px`;
@@ -1020,17 +1019,16 @@ function setLang(l) {
   applyStatic(); forceBuild = true; renderAll();
 }
 function setTheme(name) {
-  if (!THEMES.includes(name)) name = 'auto';
-  if (name === 'auto') document.documentElement.removeAttribute('data-theme');
-  else document.documentElement.dataset.theme = name;
+  if (!THEMES.includes(name)) name = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  document.documentElement.dataset.theme = name;
   $('#theme').value = name;
   try { localStorage.setItem(THEME_KEY, name); } catch (_) {}
 }
 $('#lang').addEventListener('change', ev => setLang(ev.target.value));
 $('#theme').addEventListener('change', ev => setTheme(ev.target.value));
 
-let savedLang = null, savedTheme = 'auto';
-try { savedLang = localStorage.getItem(LANG_KEY); savedTheme = localStorage.getItem(THEME_KEY) || 'auto'; } catch (_) {}
+let savedLang = null, savedTheme = null;
+try { savedLang = localStorage.getItem(LANG_KEY); savedTheme = localStorage.getItem(THEME_KEY); } catch (_) {}
 lang = savedLang in I18N ? savedLang : ((navigator.language || '').toLowerCase().startsWith('pt') ? 'pt' : 'en');
 setTheme(savedTheme);
 applyStatic();

@@ -15,7 +15,7 @@ Demo: https://strawndri.github.io/turing-machine-simulator/
 - Defina o alfabeto da fita Γ e o símbolo em branco;
 - Execução passo a passo ou contínua, com controle de velocidade; o estado e a regra atuais ficam destacados;
 - Desfazer e refazer, salvar e carregar em JSON, e exemplos prontos;
-- Interface em português e em inglês, e seis temas (automático, claro, escuro, planta azul, terminal e sépia).
+- Interface em português e em inglês, e dois temas Dracula (claro e escuro).
 
 A máquina que você desenha fica salva no navegador (localStorage).
 

@@ -7,11 +7,14 @@
   <meta name="description" content="Interactive Turing machine simulator: draw state diagrams, use multiple tapes and step through the run.">
   <script>
     /* apply the saved theme before the first paint, to avoid a flash */
-    try { var th = localStorage.getItem('turing-machine-simulator-theme'); if (th && th !== 'auto') document.documentElement.dataset.theme = th; } catch (e) {}
+    var th = null;
+    try { th = localStorage.getItem('turing-machine-simulator-theme'); } catch (e) {}
+    if (th !== 'light' && th !== 'dark') th = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.dataset.theme = th;
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;500&family=Source+Sans+3:wght@400;500;600&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -39,12 +42,8 @@
       </select>
       <label for="theme" class="sr" data-i18n="theme_label"></label>
       <select id="theme">
-        <option value="auto" data-i18n="theme_auto"></option>
         <option value="light" data-i18n="theme_light"></option>
         <option value="dark" data-i18n="theme_dark"></option>
-        <option value="blueprint" data-i18n="theme_blueprint"></option>
-        <option value="terminal" data-i18n="theme_terminal"></option>
-        <option value="sepia" data-i18n="theme_sepia"></option>
       </select>
       <button class="btn" id="btn-io" type="button" data-i18n="io_btn"></button>
     </div>
@@ -70,13 +69,6 @@
         </div>
       </div>
       <svg id="svg" role="img" data-i18n-aria="svg_aria">
-        <defs>
-          <!-- slightly wobbly strokes, so the diagram looks drawn by hand -->
-          <filter id="rough" x="-5%" y="-5%" width="110%" height="110%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="7" result="noise"/>
-            <feDisplacementMap in="SourceGraphic" in2="noise" scale="3.4" xChannelSelector="R" yChannelSelector="G"/>
-          </filter>
-        </defs>
         <g id="vp"></g>
       </svg>
       <p class="hint" id="hint"></p>
