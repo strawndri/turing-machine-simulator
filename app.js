@@ -16,7 +16,7 @@ const tapesEl = $('#tapes'), panel = $('#tape-panel');
 
 /* ---------- model ---------- */
 let M, sel = null, tool = 'select', pending = null, hover = null, ghost = null;
-let group = { s: new Set(), e: new Set() }, spaceDown = false, spaceT0 = 0, spaceUsed = false, prevTool = 'select', overBoard = false;
+let group = { s: new Set(), e: new Set() };
 const hasGroup = () => group.s.size + group.e.size > 0;
 const clearGroup = () => { group = { s: new Set(), e: new Set() }; };
 let view = { x: 0, y: 0, k: 1 }, drag = null, ignoreUp = false, fitted = false;
@@ -378,9 +378,8 @@ svg.addEventListener('pointerdown', ev => {
   drag = null; ignoreUp = false;
   const down = { sx: ev.clientX, sy: ev.clientY, moved: false };
 
-  if (ev.button === 1 || spaceDown || ev.shiftKey || tool === 'pan') {
+  if (ev.button === 1 || ev.shiftKey || tool === 'pan') {
     ev.preventDefault();
-    if (spaceDown) spaceUsed = true;
     drag = { type: 'pan', vx: view.x, vy: view.y, ...down };
     svg.classList.add('panning');
     return;
@@ -544,7 +543,6 @@ document.addEventListener('keydown', ev => {
   const mod = ev.ctrlKey || ev.metaKey;
   if (mod && ev.key.toLowerCase() === 'z') { ev.preventDefault(); ev.shiftKey ? redo() : undo(); return; }
   if (mod && ev.key.toLowerCase() === 'y') { ev.preventDefault(); redo(); return; }
-  if (ev.code === 'Space' && overBoard) { ev.preventDefault(); if (!spaceDown) { spaceDown = true; spaceT0 = Date.now(); spaceUsed = false; board.classList.add('space-pan'); } return; }
   if (mod || ev.altKey) return;
   if (ev.key === 'Delete' || ev.key === 'Backspace') { if (sel || hasGroup()) { ev.preventDefault(); deleteSel(); } }
   else if (ev.key === 'Escape') { if (tool !== 'select' || pending) setTool('select'); else if (sel || hasGroup()) { sel = null; clearGroup(); renderInspector(); renderCanvas(); } }
@@ -553,21 +551,11 @@ document.addEventListener('keydown', ev => {
   else if (ev.key === 'e' || ev.key === 'E') setTool('state');
   else if (ev.key === 't' || ev.key === 'T') setTool('edge');
 });
-const stopSpace = () => { spaceDown = false; board.classList.remove('space-pan'); };
-/* a quick tap on Space turns the pan tool on or off. Some touchpads are disabled by the system while a key is held,
-   so holding Space and dragging is not always possible */
-document.addEventListener('keyup', ev => {
-  if (ev.code !== 'Space') return;
-  const tap = spaceDown && !spaceUsed && Date.now() - spaceT0 < 350;
-  stopSpace();
-  if (tap) {
-    if (tool === 'pan') setTool(prevTool);
-    else { prevTool = tool; setTool('pan'); }
-  }
-});
-window.addEventListener('blur', stopSpace);
-board.addEventListener('pointerenter', () => { overBoard = true; });
-board.addEventListener('pointerleave', () => { overBoard = false; });
+/* holding Shift shows the grab cursor: Shift + drag moves the view */
+const setShift = on => board.classList.toggle('shift-pan', on);
+document.addEventListener('keydown', ev => { if (ev.key === 'Shift') setShift(true); });
+document.addEventListener('keyup', ev => { if (ev.key === 'Shift') setShift(false); });
+window.addEventListener('blur', () => setShift(false));
 
 /* ---------- side panel ---------- */
 function ruleRows(r, i) {

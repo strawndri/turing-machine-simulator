@@ -34,8 +34,7 @@ A máquina que você desenha fica salva no navegador (localStorage).
 | `E` | Novo estado |
 | `T` | Nova transição |
 | `H` | Mover a tela |
-| `Espaço` ou `Shift` + arrastar | Mover a tela |
-| `Espaço` (toque rápido) | Liga/desliga a ferramenta Mover tela |
+| `Shift` + arrastar | Mover a tela |
 | Rolar com dois dedos (touchpad) | Mover a tela |
 | Arrastar no espaço vazio | Selecionar vários itens |
 | `Delete` | Apagar a seleção |

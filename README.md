@@ -34,8 +34,7 @@ The machine you draw is saved in your browser (localStorage).
 | `E` | New state |
 | `T` | New transition |
 | `H` | Pan the view |
-| `Space` or `Shift` + drag | Pan the view |
-| `Space` (quick tap) | Turn the Pan tool on or off |
+| `Shift` + drag | Pan the view |
 | Two-finger scroll (touchpad) | Pan the view |
 | Drag on an empty spot | Select several items |
 | `Delete` | Delete the selection |
