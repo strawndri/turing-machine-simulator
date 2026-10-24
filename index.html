@@ -5,9 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Turing Machine Simulator</title>
   <meta name="description" content="Interactive Turing machine simulator: draw state diagrams, use multiple tapes and step through the run.">
+  <script>
+    /* apply the saved theme before the first paint, to avoid a flash */
+    try { var th = localStorage.getItem('turing-machine-simulator-theme'); if (th && th !== 'auto') document.documentElement.dataset.theme = th; } catch (e) {}
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;500&family=Source+Sans+3:wght@400;500;600&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -65,7 +69,16 @@
           <button class="btn" type="button" data-act="zoomin" data-i18n-aria="zoom_in_aria">+</button>
         </div>
       </div>
-      <svg id="svg" role="img" data-i18n-aria="svg_aria"><g id="vp"></g></svg>
+      <svg id="svg" role="img" data-i18n-aria="svg_aria">
+        <defs>
+          <!-- slightly wobbly strokes, so the diagram looks drawn by hand -->
+          <filter id="rough" x="-5%" y="-5%" width="110%" height="110%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="7" result="noise"/>
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="3.4" xChannelSelector="R" yChannelSelector="G"/>
+          </filter>
+        </defs>
+        <g id="vp"></g>
+      </svg>
       <p class="hint" id="hint"></p>
     </section>
     <aside class="inspector" id="inspector" aria-live="polite"></aside>

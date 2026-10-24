@@ -1,6 +1,6 @@
 (() => {
 'use strict';
-const R = 28, LIMIT = 5000, KEY = 'turing-machine-simulator-v1', COLW = 42, MAXK = 4;
+const R = 28, LIMIT = 5000, KEY = 'turing-machine-simulator-v1', COLW = 46, MAXK = 4;
 const LANG_KEY = 'turing-machine-simulator-lang', THEME_KEY = 'turing-machine-simulator-theme';
 const THEMES = ['auto', 'light', 'dark', 'blueprint', 'terminal', 'sepia'];
 let lang = 'pt';
@@ -294,7 +294,7 @@ function zoomAt(factor, cx, cy) {
 
 /* ---------- diagram drawing ---------- */
 function renderCanvas() {
-  let lines = '', labels = '', nodes = '', init = '', gh = '';
+  let lines = '', labels = '', nodes = '', texts = '', init = '', gh = '';
   for (const e of M.edges) {
     const g = geom(e);
     const isSel = (sel && sel.kind === 'edge' && sel.id === e.id) || group.e.has(e.id);
@@ -318,8 +318,8 @@ function renderCanvas() {
     else if (hover === s.id && pending) cls += ' target';
     nodes += `<g class="state${cls}" data-kind="state" data-id="${s.id}" transform="translate(${s.x} ${s.y})">`
       + (cls.includes(' sel') ? `<circle class="selring" r="${R + 7}"/>` : '')
-      + `<circle class="body" r="${R}"/>` + (s.final ? `<circle class="inner" r="${R - 5}"/>` : '')
-      + `<text class="nm" text-anchor="middle" y="7">${nameSvg(s.name)}</text></g>`;
+      + `<circle class="body" r="${R}"/>` + (s.final ? `<circle class="inner" r="${R - 5}"/>` : '') + '</g>';
+    texts += `<text class="nm" x="${s.x}" y="${s.y + 7}" text-anchor="middle">${nameSvg(s.name)}</text>`;
   }
   if (pending && ghost) { const p = S(pending); if (p) gh = `<path class="ghost" d="M${p.x} ${p.y} L${ghost.x.toFixed(1)} ${ghost.y.toFixed(1)}"/>`; }
   let mq = '';
@@ -327,7 +327,8 @@ function renderCanvas() {
     const x = Math.min(drag.p0.x, drag.p1.x), y = Math.min(drag.p0.y, drag.p1.y);
     mq = `<rect class="marquee" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${Math.abs(drag.p1.x - drag.p0.x).toFixed(1)}" height="${Math.abs(drag.p1.y - drag.p0.y).toFixed(1)}"/>`;
   }
-  vp.innerHTML = lines + init + gh + nodes + labels + mq;
+  const rc = drag && drag.moved ? '' : ' class="rough"';
+  vp.innerHTML = `<g${rc}>${lines}</g>` + init + gh + `<g${rc}>${nodes}</g>` + `<g>${texts}</g>` + labels + mq;
   vp.setAttribute('transform', `translate(${view.x.toFixed(1)} ${view.y.toFixed(1)}) scale(${view.k.toFixed(4)})`);
   const g = 22 * view.k;
   board.style.backgroundSize = `${g}px ${g}px`;
