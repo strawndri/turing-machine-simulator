@@ -16,6 +16,9 @@ const tapesEl = $('#tapes'), panel = $('#tape-panel');
 
 /* ---------- model ---------- */
 let M, sel = null, tool = 'select', pending = null, hover = null, ghost = null;
+let group = { s: new Set(), e: new Set() }, spaceDown = false, overBoard = false;
+const hasGroup = () => group.s.size + group.e.size > 0;
+const clearGroup = () => { group = { s: new Set(), e: new Set() }; };
 let view = { x: 0, y: 0, k: 1 }, drag = null, ignoreUp = false, fitted = false;
 let run = null, playing = false, timer = 0, speed = 4, notice = '';
 let blocks = [], builtK = 0, forceBuild = true, cursor = [], pads = [], ranges = [];
@@ -201,6 +204,7 @@ function checkpoint(key) {
 }
 function restore(json) {
   M = JSON.parse(json);
+  clearGroup();
   pause(); run = null; notice = ''; pending = null; lastKey = null; forceBuild = true;
   if (sel && !(sel.kind === 'state' ? S(sel.id) : E(sel.id))) sel = null;
   renderAll(); save();
@@ -293,7 +297,7 @@ function renderCanvas() {
   let lines = '', labels = '', nodes = '', init = '', gh = '';
   for (const e of M.edges) {
     const g = geom(e);
-    const isSel = sel && sel.kind === 'edge' && sel.id === e.id;
+    const isSel = (sel && sel.kind === 'edge' && sel.id === e.id) || group.e.has(e.id);
     const act = run && run.last && run.last.e === e.id;
     const cls = (isSel ? ' sel' : '') + (act ? ' act' : '');
     lines += `<g class="edge${cls}" data-kind="edge" data-id="${e.id}"><path class="hit" d="${g.path}"/><path class="line" d="${g.path}"/><polygon class="tip" points="${g.arrow}"/></g>`;
@@ -308,7 +312,7 @@ function renderCanvas() {
   }
   for (const s of M.states) {
     let cls = '';
-    if (sel && sel.kind === 'state' && sel.id === s.id) cls += ' sel';
+    if ((sel && sel.kind === 'state' && sel.id === s.id) || group.s.has(s.id)) cls += ' sel';
     if (run && run.state === s.id) cls += run.status === 'accepted' ? ' ok' : run.status === 'rejected' || run.status === 'limit' ? ' bad' : ' cur';
     if (pending === s.id) cls += ' pend';
     else if (hover === s.id && pending) cls += ' target';
@@ -318,13 +322,18 @@ function renderCanvas() {
       + `<text class="nm" text-anchor="middle" y="7">${nameSvg(s.name)}</text></g>`;
   }
   if (pending && ghost) { const p = S(pending); if (p) gh = `<path class="ghost" d="M${p.x} ${p.y} L${ghost.x.toFixed(1)} ${ghost.y.toFixed(1)}"/>`; }
-  vp.innerHTML = lines + init + gh + nodes + labels;
+  let mq = '';
+  if (drag && drag.type === 'marquee' && drag.moved) {
+    const x = Math.min(drag.p0.x, drag.p1.x), y = Math.min(drag.p0.y, drag.p1.y);
+    mq = `<rect class="marquee" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${Math.abs(drag.p1.x - drag.p0.x).toFixed(1)}" height="${Math.abs(drag.p1.y - drag.p0.y).toFixed(1)}"/>`;
+  }
+  vp.innerHTML = lines + init + gh + nodes + labels + mq;
   vp.setAttribute('transform', `translate(${view.x.toFixed(1)} ${view.y.toFixed(1)}) scale(${view.k.toFixed(4)})`);
   const g = 22 * view.k;
   board.style.backgroundSize = `${g}px ${g}px`;
   board.style.backgroundPosition = `${view.x}px ${view.y}px`;
   board.dataset.tool = tool;
-  const hints = { select: tr('hint_select'), state: tr('hint_state'), edge: pending ? tr('hint_edge_pending') : tr('hint_edge') };
+  const hints = { select: tr('hint_select'), pan: tr('hint_pan'), state: tr('hint_state'), edge: pending ? tr('hint_edge_pending') : tr('hint_edge') };
   $('#hint').textContent = hints[tool];
 }
 
@@ -340,6 +349,7 @@ function addState(p) {
   checkpoint();
   const s = { id: 's' + M.seq++, name: nextName(), x: Math.round(p.x / 10) * 10, y: Math.round(p.y / 10) * 10, initial: !M.states.length, final: false };
   M.states.push(s);
+  clearGroup();
   sel = { kind: 'state', id: s.id };
   renderAll(); save();
 }
@@ -353,19 +363,27 @@ function createEdge(from, to) {
     if (rev) { e.bend = 38; if (!rev.bend) rev.bend = 38; }
     M.edges.push(e);
   }
+  clearGroup();
   sel = { kind: 'edge', id: e.id };
   renderAll(); save();
   const el = $(`#rr-${e.rules.length - 1}-0`); if (el) el.focus();
 }
 
 svg.addEventListener('pointerdown', ev => {
-  if (ev.button) return;
+  if (ev.button && ev.button !== 1) return;
   const p = world(ev);
   const tg = ev.target.closest('[data-kind]');
   const t = tg ? { kind: tg.dataset.kind, id: tg.dataset.id } : null;
   svg.setPointerCapture(ev.pointerId);
   drag = null; ignoreUp = false;
   const down = { sx: ev.clientX, sy: ev.clientY, moved: false };
+
+  if (ev.button === 1 || spaceDown || tool === 'pan') {
+    ev.preventDefault();
+    drag = { type: 'pan', vx: view.x, vy: view.y, ...down };
+    svg.classList.add('panning');
+    return;
+  }
 
   if (tool === 'state' && !t) { addState(p); ignoreUp = true; return; }
   if (tool === 'edge' && t && t.kind === 'state') {
@@ -375,15 +393,19 @@ svg.addEventListener('pointerdown', ev => {
   if (tool === 'edge' && pending && !t) { pending = null; ghost = null; }
 
   if (t && t.kind === 'state') {
-    const s = S(t.id);
-    if (!sel || sel.kind !== 'state' || sel.id !== t.id) { sel = { kind: 'state', id: t.id }; renderInspector(); }
-    drag = { type: 'move', id: t.id, dx: p.x - s.x, dy: p.y - s.y, ...down };
+    const inGroup = group.s.has(t.id);
+    if (!inGroup && (!sel || sel.kind !== 'state' || sel.id !== t.id || hasGroup())) { clearGroup(); sel = { kind: 'state', id: t.id }; renderInspector(); }
+    const ids = inGroup ? [...group.s] : [t.id];
+    drag = { type: 'move', offs: ids.map(i => ({ id: i, dx: p.x - S(i).x, dy: p.y - S(i).y })), ...down };
   } else if (t && t.kind === 'edge') {
     const e = E(t.id), g = geom(e);
-    if (!sel || sel.kind !== 'edge' || sel.id !== t.id) { sel = { kind: 'edge', id: t.id }; renderInspector(); }
+    if (!group.e.has(t.id) && (!sel || sel.kind !== 'edge' || sel.id !== t.id || hasGroup())) { clearGroup(); sel = { kind: 'edge', id: t.id }; renderInspector(); }
     drag = { type: 'bend', id: t.id, p0: p, bend0: e.bend || 0, nb: g.nb, ...down };
   } else {
-    drag = { type: 'pan', vx: view.x, vy: view.y, ...down };
+    clearGroup();
+    if (sel) sel = null;
+    renderInspector();
+    drag = { type: 'marquee', p0: p, p1: p, ...down };
   }
   renderCanvas();
 });
@@ -401,8 +423,7 @@ svg.addEventListener('pointermove', ev => {
   if (!drag.moved && Math.hypot(ev.clientX - drag.sx, ev.clientY - drag.sy) < 3) return;
   if (!drag.moved) { drag.moved = true; if (drag.type === 'move' || drag.type === 'bend') checkpoint(); }
   if (drag.type === 'move') {
-    const s = S(drag.id);
-    s.x = Math.round((p.x - drag.dx) / 10) * 10; s.y = Math.round((p.y - drag.dy) / 10) * 10;
+    drag.offs.forEach(o => { const s = S(o.id); s.x = Math.round((p.x - o.dx) / 10) * 10; s.y = Math.round((p.y - o.dy) / 10) * 10; });
   } else if (drag.type === 'bend') {
     const e = E(drag.id);
     if (e.from === e.to) {
@@ -415,6 +436,9 @@ svg.addEventListener('pointermove', ev => {
     }
   } else if (drag.type === 'pan') {
     view.x = drag.vx + (ev.clientX - drag.sx); view.y = drag.vy + (ev.clientY - drag.sy);
+  } else if (drag.type === 'marquee') {
+    drag.p1 = p;
+    group = marqueeSets(drag);
   }
   renderCanvas();
 });
@@ -431,11 +455,29 @@ function endPointer(ev) {
     }
     return;
   }
-  if (d.type === 'pan' && !d.moved && sel) { sel = null; renderInspector(); renderCanvas(); }
+  if (d.type === 'pan') { svg.classList.remove('panning'); return; }
+  if (d.type === 'marquee') { finishMarquee(); return; }
   if (d.moved && (d.type === 'move' || d.type === 'bend')) save();
 }
 svg.addEventListener('pointerup', endPointer);
-svg.addEventListener('pointercancel', () => { drag = null; });
+svg.addEventListener('pointercancel', () => { drag = null; svg.classList.remove('panning'); renderCanvas(); });
+
+/* rectangle selection: states whose center is inside; transitions whose label is inside or whose ends are both selected */
+function marqueeSets(d) {
+  const x0 = Math.min(d.p0.x, d.p1.x), x1 = Math.max(d.p0.x, d.p1.x), y0 = Math.min(d.p0.y, d.p1.y), y1 = Math.max(d.p0.y, d.p1.y);
+  const inside = (x, y) => x >= x0 && x <= x1 && y >= y0 && y <= y1;
+  const s = new Set(M.states.filter(st => inside(st.x, st.y)).map(st => st.id));
+  const e = new Set(M.edges.filter(ed => (s.has(ed.from) && s.has(ed.to)) || inside(geom(ed).L.x, geom(ed).L.y)).map(ed => ed.id));
+  return { s, e };
+}
+function finishMarquee() {
+  const n = group.s.size + group.e.size;
+  if (n === 1) {
+    sel = group.s.size ? { kind: 'state', id: [...group.s][0] } : { kind: 'edge', id: [...group.e][0] };
+    clearGroup();
+  }
+  renderInspector(); renderCanvas();
+}
 svg.addEventListener('dblclick', ev => {
   if (tool !== 'select') return;
   const tg = ev.target.closest('[data-kind]');
@@ -466,6 +508,15 @@ $('#toolbar').addEventListener('click', ev => {
 });
 
 function deleteSel() {
+  if (hasGroup()) {
+    checkpoint();
+    const gs = group.s, ge = group.e;
+    M.edges = M.edges.filter(e => !ge.has(e.id) && !gs.has(e.from) && !gs.has(e.to));
+    M.states = M.states.filter(s => !gs.has(s.id));
+    if (run) { if (gs.size) { pause(); run = null; } else if (run.last && ge.has(run.last.e)) run.last = null; }
+    clearGroup(); sel = null; renderAll(); save();
+    return;
+  }
   if (!sel) return;
   checkpoint();
   if (sel.kind === 'state') {
@@ -487,13 +538,20 @@ document.addEventListener('keydown', ev => {
   const mod = ev.ctrlKey || ev.metaKey;
   if (mod && ev.key.toLowerCase() === 'z') { ev.preventDefault(); ev.shiftKey ? redo() : undo(); return; }
   if (mod && ev.key.toLowerCase() === 'y') { ev.preventDefault(); redo(); return; }
+  if (ev.code === 'Space' && overBoard) { ev.preventDefault(); if (!spaceDown) { spaceDown = true; board.classList.add('space-pan'); } return; }
   if (mod || ev.altKey) return;
-  if (ev.key === 'Delete' || ev.key === 'Backspace') { if (sel) { ev.preventDefault(); deleteSel(); } }
-  else if (ev.key === 'Escape') { if (tool !== 'select' || pending) setTool('select'); else if (sel) { sel = null; renderInspector(); renderCanvas(); } }
+  if (ev.key === 'Delete' || ev.key === 'Backspace') { if (sel || hasGroup()) { ev.preventDefault(); deleteSel(); } }
+  else if (ev.key === 'Escape') { if (tool !== 'select' || pending) setTool('select'); else if (sel || hasGroup()) { sel = null; clearGroup(); renderInspector(); renderCanvas(); } }
+  else if (ev.key === 'h' || ev.key === 'H') setTool('pan');
   else if (ev.key === 'v' || ev.key === 'V') setTool('select');
   else if (ev.key === 'e' || ev.key === 'E') setTool('state');
   else if (ev.key === 't' || ev.key === 'T') setTool('edge');
 });
+const stopSpace = () => { spaceDown = false; board.classList.remove('space-pan'); };
+document.addEventListener('keyup', ev => { if (ev.code === 'Space') stopSpace(); });
+window.addEventListener('blur', stopSpace);
+board.addEventListener('pointerenter', () => { overBoard = true; });
+board.addEventListener('pointerleave', () => { overBoard = false; });
 
 /* ---------- side panel ---------- */
 function ruleRows(r, i) {
@@ -514,8 +572,13 @@ function ruleRows(r, i) {
 }
 function renderInspector() {
   if (sel && !(sel.kind === 'state' ? S(sel.id) : E(sel.id))) sel = null;
+  if (hasGroup()) {
+    insp.innerHTML = `<h2>${tr('h_group')}</h2><p class="big">${tr('group_counts', group.s.size, group.e.size)}</p><p class="note">${tr('group_note')}</p><button class="btn danger" type="button" data-act="delete">${tr('del_group')}</button>`;
+    return;
+  }
   if (!sel) {
-    insp.innerHTML = `<h2>${tr('how_title')}</h2><ol class="help">${tr('help').map(h => `<li>${h}</li>`).join('')}</ol><p class="note">${tr('shortcuts')}</p>`;
+    const rows = tr('shortcuts').map(([k, a]) => `<tr><td>${esc(k)}</td><td>${esc(a)}</td></tr>`).join('');
+    insp.innerHTML = `<h2>${tr('how_title')}</h2><ol class="help">${tr('help').map(h => `<li>${h}</li>`).join('')}</ol><h2>${tr('shortcuts_title')}</h2><table class="keys">${rows}</table><p class="note">${tr('saved_note')}</p>`;
     return;
   }
   if (sel.kind === 'state') {
@@ -918,7 +981,7 @@ $('#io-load').addEventListener('click', () => {
 });
 function applyMachine(m) {
   checkpoint();
-  M = m; sel = null; pending = null; forceBuild = true;
+  M = m; sel = null; clearGroup(); pending = null; forceBuild = true;
   pause(); run = null; notice = '';
   renderAll(); fit(); save(); scrollAll(false);
 }
