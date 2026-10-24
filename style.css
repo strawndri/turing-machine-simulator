@@ -1,14 +1,14 @@
 /* Layout: header, diagram board next to an edit panel, tapes with controls below.
    Look: plain and scientific. One monospace font for every text, thin borders, no shadows,
-   Dracula colors (dark) and Alucard, the official Dracula light variant (light). */
+   Dracula colors (dark) and the same hues in pastel tones (light). */
 :root{
   --font:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
-  /* light: Alucard */
-  --bg:#FFFBEB; --panel:#FFFBEB; --canvas:#FFFBEB; --soft:#F2ECD5; --tile:#FFFBEB;
-  --ink:#1F1F1F; --muted:#6C664B; --line:#CFCFDE;
-  --accent:#A3144D; --sel:#644AC9; --sel-soft:#E6E0F8; --on-sel:#FFFBEB;
-  --run:#A34D14; --run-soft:#F4E0C8; --on-run:#FFFBEB;
-  --ok:#14710A; --ok-soft:#DCEECF; --bad:#CB3A2A; --bad-soft:#F7DAD3;
+  /* light: Dracula hues in pastel tones */
+  --bg:#F1EFF8; --panel:#FBFAFE; --canvas:#FBFAFE; --soft:#ECE9F6; --tile:#FBFAFE;
+  --ink:#2F3142; --muted:#6B6F8F; --line:#D9D5EA;
+  --accent:#B84C8C; --sel:#7F63C7; --sel-soft:#E4DCF7; --on-sel:#FFFFFF;
+  --run:#B2661F; --run-soft:#FBE6CF; --on-run:#FFFFFF;
+  --ok:#2F8A50; --ok-soft:#D8F1E0; --bad:#D2514F; --bad-soft:#FBDDE0;
   color-scheme:light;
 }
 :root[data-theme="dark"]{
