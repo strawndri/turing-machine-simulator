@@ -34,3 +34,7 @@ The machine you draw is saved in your browser (localStorage).
 4. Press `Step` or `Run`.
 
 Shortcuts: `V` select, `E` new state, `T` new transition, `Delete` remove, `Ctrl+Z` undo.
+
+## License
+
+[MIT](LICENSE)

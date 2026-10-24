@@ -34,3 +34,7 @@ A máquina que você desenha fica salva no navegador (localStorage).
 4. Clique em `Passo` ou `Executar`.
 
 Atalhos: `V` selecionar, `E` novo estado, `T` nova transição, `Delete` apagar, `Ctrl+Z` desfazer.
+
+## Licença
+
+[MIT](LICENSE)
