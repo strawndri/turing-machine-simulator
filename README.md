@@ -15,7 +15,7 @@ Live demo: https://strawndri.github.io/turing-machine-simulator/
 - Define the tape alphabet Γ and the blank symbol;
 - Step by step or continuous run, with speed control; the current state and rule are highlighted;
 - Undo and redo, save and load as JSON, and ready-made examples;
-- Portuguese and English interface, and two Dracula themes (light and dark).
+- Portuguese and English interface, and two themes (light and dark).
 
 The machine you draw is saved in your browser (localStorage).
 
@@ -34,7 +34,8 @@ The machine you draw is saved in your browser (localStorage).
 | `E` | New state |
 | `T` | New transition |
 | `H` | Pan the view |
-| `Space` + drag | Pan the view |
+| `Space` or `Shift` + drag | Pan the view |
+| `Space` (quick tap) | Turn the Pan tool on or off |
 | Two-finger scroll (touchpad) | Pan the view |
 | Drag on an empty spot | Select several items |
 | `Delete` | Delete the selection |

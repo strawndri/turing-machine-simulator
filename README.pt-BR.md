@@ -15,7 +15,7 @@ Demo: https://strawndri.github.io/turing-machine-simulator/
 - Defina o alfabeto da fita Γ e o símbolo em branco;
 - Execução passo a passo ou contínua, com controle de velocidade; o estado e a regra atuais ficam destacados;
 - Desfazer e refazer, salvar e carregar em JSON, e exemplos prontos;
-- Interface em português e em inglês, e dois temas Dracula (claro e escuro).
+- Interface em português e em inglês, e dois temas (claro e escuro).
 
 A máquina que você desenha fica salva no navegador (localStorage).
 
@@ -34,7 +34,8 @@ A máquina que você desenha fica salva no navegador (localStorage).
 | `E` | Novo estado |
 | `T` | Nova transição |
 | `H` | Mover a tela |
-| `Espaço` + arrastar | Mover a tela |
+| `Espaço` ou `Shift` + arrastar | Mover a tela |
+| `Espaço` (toque rápido) | Liga/desliga a ferramenta Mover tela |
 | Rolar com dois dedos (touchpad) | Mover a tela |
 | Arrastar no espaço vazio | Selecionar vários itens |
 | `Delete` | Apagar a seleção |
