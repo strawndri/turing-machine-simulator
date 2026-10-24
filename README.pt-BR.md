@@ -44,6 +44,6 @@ A máquina que você desenha fica salva no navegador (localStorage).
 
 ## Licença
 
-[MIT](LICENSE)
+[MIT](LICENSE). Copyright © 2026 Andrieli Gonçalves.
 
-Feito por: Andrieli Gonçalves
+Feito por: Andrieli Gonçalves (alg24@inf.ufpr.br)

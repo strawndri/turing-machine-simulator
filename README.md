@@ -44,6 +44,6 @@ The machine you draw is saved in your browser (localStorage).
 
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE). Copyright © 2026 Andrieli Gonçalves.
 
-Made by: Andrieli Gonçalves
+Made by: Andrieli Gonçalves (alg24@inf.ufpr.br)
