@@ -18,6 +18,37 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<!-- very faint line drawings of a Turing machine, only visible in the side margins of wide screens -->
+<svg class="bg bg-l" viewBox="0 0 260 1080" aria-hidden="true" focusable="false">
+  <defs><pattern id="cells-l" width="44" height="44" patternUnits="userSpaceOnUse"><path d="M43.5 0V44"/></pattern></defs>
+  <rect x="-2" y="620" width="270" height="44" fill="url(#cells-l)"/>
+  <text x="22" y="650">0</text><text x="66" y="650">1</text><text x="110" y="650">1</text><text x="154" y="650">0</text><text x="198" y="650">B</text><text x="242" y="650">1</text>
+  <path d="M96 520h84v88h-84z M118 608l22 14 22-14 M110 540h60 M110 556h60"/>
+  <path d="M118 268C118 350 146 380 146 440V520 M152 268C152 340 172 372 172 440V520"/>
+  <circle cx="135" cy="190" r="82"/><circle cx="135" cy="190" r="58"/><circle cx="135" cy="190" r="12"/>
+  <path d="M135 178V132 M146.4 186.3L190.2 172.1 M142.1 199.7L169.1 236.9 M127.9 199.7L100.9 236.9 M123.6 186.3L79.8 172.1"/>
+  <circle cx="95" cy="840" r="44" stroke-width="9" stroke-dasharray="8.64 8.64"/><circle cx="95" cy="840" r="32"/><circle cx="95" cy="840" r="8"/>
+  <circle cx="178" cy="905" r="28" stroke-width="8" stroke-dasharray="8.8 8.8"/><circle cx="178" cy="905" r="18"/><circle cx="178" cy="905" r="6"/>
+  <rect x="30" y="960" width="200" height="86"/><circle cx="62" cy="1003" r="14"/><path d="M62 1003l8-8"/>
+  <circle cx="110" cy="985" r="5"/><circle cx="130" cy="985" r="5"/><circle cx="150" cy="985" r="5"/><path d="M100 1022H220"/>
+  <text x="188" y="1008">q0</text>
+</svg>
+<svg class="bg bg-r" viewBox="0 0 260 1080" aria-hidden="true" focusable="false">
+  <defs><pattern id="cells-r" width="44" height="44" patternUnits="userSpaceOnUse"><path d="M43.5 0V44"/></pattern></defs>
+  <rect x="-2" y="620" width="270" height="44" fill="url(#cells-r)"/>
+  <text x="22" y="650">B</text><text x="66" y="650">1</text><text x="110" y="650">0</text><text x="154" y="650">0</text><text x="198" y="650">1</text><text x="242" y="650">B</text>
+  <path d="M100 520h84v88h-84z M122 608l20 14 20-14 M114 540h56 M114 556h56"/>
+  <path d="M118 398C118 440 140 470 140 520 M148 396C148 440 160 470 160 520"/>
+  <circle cx="130" cy="330" r="70"/><circle cx="130" cy="330" r="48"/><circle cx="130" cy="330" r="10"/>
+  <path d="M130 320V282 M139.5 327L175.6 315.3 M135.9 338.1L158.2 368.7 M124.1 338.1L101.8 368.7 M120.5 327L84.4 315.3"/>
+  <rect x="30" y="70" width="200" height="120"/>
+  <circle cx="82" cy="130" r="36"/><circle cx="82" cy="130" r="30" stroke-dasharray="2 8"/><path d="M82 130l18-22"/>
+  <rect x="140" y="98" width="14" height="44"/><rect x="164" y="98" width="14" height="44"/><rect x="188" y="98" width="14" height="44"/>
+  <path d="M147 98v18 M171 124v18 M195 98v18 M30 160h200"/>
+  <circle cx="150" cy="850" r="52" stroke-width="9" stroke-dasharray="10.2 10.2"/><circle cx="150" cy="850" r="38"/><circle cx="150" cy="850" r="9"/>
+  <circle cx="62" cy="930" r="30" stroke-width="8" stroke-dasharray="9.4 9.4"/><circle cx="62" cy="930" r="19"/><circle cx="62" cy="930" r="6"/>
+  <text x="206" y="1030">q1</text>
+</svg>
 <div class="app">
   <header class="top">
     <div class="brand">
