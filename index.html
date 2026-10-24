@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Turing Machine Simulator</title>
+  <meta name="description" content="Interactive Turing machine simulator: draw state diagrams, use multiple tapes and step through the run.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <h1 data-i18n="title"></h1>
+      <p data-i18n="subtitle"></p>
+    </div>
+    <div class="top-actions">
+      <label for="examples" class="sr" data-i18n="examples_label"></label>
+      <select id="examples">
+        <option value="" data-i18n="ex_placeholder"></option>
+        <option value="abc" data-i18n="ex_abc"></option>
+        <option value="inc" data-i18n="ex_inc"></option>
+        <option value="copy" data-i18n="ex_copy"></option>
+        <option value="copy2" data-i18n="ex_copy2"></option>
+        <option value="soma" data-i18n="ex_soma"></option>
+        <option value="vazio" data-i18n="ex_vazio"></option>
+      </select>
+      <label for="lang" class="sr" data-i18n="lang_label"></label>
+      <select id="lang">
+        <option value="pt">Português</option>
+        <option value="en">English</option>
+      </select>
+      <label for="theme" class="sr" data-i18n="theme_label"></label>
+      <select id="theme">
+        <option value="auto" data-i18n="theme_auto"></option>
+        <option value="light" data-i18n="theme_light"></option>
+        <option value="dark" data-i18n="theme_dark"></option>
+        <option value="blueprint" data-i18n="theme_blueprint"></option>
+        <option value="terminal" data-i18n="theme_terminal"></option>
+        <option value="sepia" data-i18n="theme_sepia"></option>
+      </select>
+      <button class="btn" id="btn-io" type="button" data-i18n="io_btn"></button>
+    </div>
+  </header>
+
+  <main class="work">
+    <section class="board" id="board" data-tool="select" data-i18n-aria="board_aria">
+      <div class="toolbar" id="toolbar">
+        <div class="grp" role="group" data-i18n-aria="tools_aria">
+          <button class="btn" type="button" data-tool="select" aria-pressed="true"><span data-i18n="tool_select"></span> <kbd>V</kbd></button>
+          <button class="btn" type="button" data-tool="state" aria-pressed="false"><span data-i18n="tool_state"></span> <kbd>E</kbd></button>
+          <button class="btn" type="button" data-tool="edge" aria-pressed="false"><span data-i18n="tool_edge"></span> <kbd>T</kbd></button>
+        </div>
+        <div class="grp" role="group" data-i18n-aria="hist_aria">
+          <button class="btn" type="button" data-act="undo" data-i18n="undo" data-i18n-title="undo_title"></button>
+          <button class="btn" type="button" data-act="redo" data-i18n="redo" data-i18n-title="redo_title"></button>
+        </div>
+        <div class="grp" role="group" data-i18n-aria="zoom_aria">
+          <button class="btn" type="button" data-act="zoomout" data-i18n-aria="zoom_out_aria">−</button>
+          <button class="btn" type="button" data-act="fit" data-i18n="fit"></button>
+          <button class="btn" type="button" data-act="zoomin" data-i18n-aria="zoom_in_aria">+</button>
+        </div>
+      </div>
+      <svg id="svg" role="img" data-i18n-aria="svg_aria"><g id="vp"></g></svg>
+      <p class="hint" id="hint"></p>
+    </section>
+    <aside class="inspector" id="inspector" aria-live="polite"></aside>
+  </main>
+
+  <section class="tape-panel" id="tape-panel" data-status="idle" data-i18n-aria="tapes_aria">
+    <div class="tape-top">
+      <div class="left">
+        <h2 data-i18n="tapes"></h2>
+        <div class="counter" role="group" data-i18n-aria="count_aria">
+          <button class="btn sm" type="button" id="k-minus" data-i18n-aria="k_minus_aria">−</button>
+          <output id="k-out" for="k-minus k-plus"></output>
+          <button class="btn sm" type="button" id="k-plus" data-i18n-aria="k_plus_aria">+</button>
+        </div>
+        <span class="tag" id="tape-tag"></span>
+      </div>
+      <div class="tape-tools">
+        <label for="blank"><span data-i18n="blank"></span> <input type="text" id="blank" maxlength="1" autocomplete="off" spellcheck="false"></label>
+        <button class="btn sm" type="button" id="b-gohead" data-i18n="goto_heads"></button>
+      </div>
+    </div>
+    <div class="gamma" id="gamma">
+      <span class="gl">Γ = {</span><span class="gchips" id="g-chips"></span><span class="gl">}</span>
+      <label class="sr" for="g-add" data-i18n="gamma_new_sr"></label>
+      <input type="text" id="g-add" data-i18n-ph="gamma_ph" autocomplete="off" spellcheck="false">
+      <button class="btn" type="button" id="g-btn" data-i18n="gamma_add"></button>
+      <button class="btn" type="button" id="g-fill" data-i18n="gamma_fill" data-i18n-title="gamma_fill_title"></button>
+    </div>
+    <div class="tapes" id="tapes"></div>
+    <div class="controls">
+      <div class="grp">
+        <button class="btn" type="button" id="b-reset" data-i18n="reset"></button>
+        <button class="btn" type="button" id="b-step" data-i18n="step"></button>
+        <button class="btn primary" type="button" id="b-run"></button>
+      </div>
+      <label class="speed" for="speed"><span data-i18n="speed"></span>
+        <input type="range" id="speed" min="1" max="60" value="4">
+        <output id="speed-out" for="speed"></output>
+      </label>
+      <div class="status" id="status" aria-live="polite"></div>
+    </div>
+  </section>
+</div>
+
+<div class="modal" id="modal" hidden>
+  <div class="box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <h2 id="modal-title" data-i18n="io_title"></h2>
+    <p class="note" data-i18n="io_help"></p>
+    <textarea id="io-text" spellcheck="false" data-i18n-aria="io_aria"></textarea>
+    <p class="err" id="io-err"></p>
+    <div class="row">
+      <button class="btn" type="button" id="io-copy" data-i18n="io_copy"></button>
+      <button class="btn primary" type="button" id="io-load" data-i18n="io_load"></button>
+      <button class="btn" type="button" id="io-close" data-i18n="io_close"></button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="i18n.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
