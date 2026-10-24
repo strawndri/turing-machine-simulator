@@ -35,10 +35,11 @@ A máquina que você desenha fica salva no navegador (localStorage).
 | `T` | Nova transição |
 | `H` | Mover a tela |
 | `Espaço` + arrastar | Mover a tela |
+| Rolar com dois dedos (touchpad) | Mover a tela |
 | Arrastar no espaço vazio | Selecionar vários itens |
 | `Delete` | Apagar a seleção |
 | `Ctrl+Z` / `Ctrl+Shift+Z` | Desfazer / refazer |
-| `Ctrl` + roda do mouse | Zoom |
+| `Ctrl` + roda do mouse, ou pinça no touchpad | Zoom |
 | `Esc` | Cancelar |
 
 ## Licença

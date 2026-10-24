@@ -486,8 +486,13 @@ svg.addEventListener('dblclick', ev => {
   else { const i = $('#rr-0-0'); if (i) i.focus(); }
 });
 svg.addEventListener('wheel', ev => {
-  if (!(ev.ctrlKey || ev.metaKey)) return;
   ev.preventDefault();
+  if (!(ev.ctrlKey || ev.metaKey)) {
+    const k = ev.deltaMode === 1 ? 16 : 1;
+    view.x -= ev.deltaX * k; view.y -= ev.deltaY * k;
+    renderCanvas();
+    return;
+  }
   const r = svg.getBoundingClientRect();
   zoomAt(ev.deltaY < 0 ? 1.1 : 1 / 1.1, ev.clientX - r.left, ev.clientY - r.top);
 }, { passive: false });

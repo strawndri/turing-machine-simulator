@@ -35,10 +35,11 @@ The machine you draw is saved in your browser (localStorage).
 | `T` | New transition |
 | `H` | Pan the view |
 | `Space` + drag | Pan the view |
+| Two-finger scroll (touchpad) | Pan the view |
 | Drag on an empty spot | Select several items |
 | `Delete` | Delete the selection |
 | `Ctrl+Z` / `Ctrl+Shift+Z` | Undo / redo |
-| `Ctrl` + mouse wheel | Zoom |
+| `Ctrl` + mouse wheel, or pinch on the touchpad | Zoom |
 | `Esc` | Cancel |
 
 ## License
