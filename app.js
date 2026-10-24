@@ -1028,7 +1028,7 @@ $('#theme').addEventListener('change', ev => setTheme(ev.target.value));
 
 let savedLang = null, savedTheme = null;
 try { savedLang = localStorage.getItem(LANG_KEY); savedTheme = localStorage.getItem(THEME_KEY); } catch (_) {}
-lang = savedLang in I18N ? savedLang : ((navigator.language || '').toLowerCase().startsWith('pt') ? 'pt' : 'en');
+lang = savedLang in I18N ? savedLang : 'en';
 setTheme(savedTheme);
 applyStatic();
 M = loadSaved() || examples('abc');
