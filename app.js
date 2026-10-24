@@ -333,7 +333,7 @@ function renderCanvas() {
   board.style.backgroundSize = `${g}px ${g}px`;
   board.style.backgroundPosition = `${view.x}px ${view.y}px`;
   board.dataset.tool = tool;
-  const hints = { select: tr('hint_select'), pan: tr('hint_pan'), state: tr('hint_state'), edge: pending ? tr('hint_edge_pending') : tr('hint_edge') };
+  const hints = { select: '', pan: tr('hint_pan'), state: tr('hint_state'), edge: pending ? tr('hint_edge_pending') : tr('hint_edge') };
   $('#hint').textContent = hints[tool];
 }
 
