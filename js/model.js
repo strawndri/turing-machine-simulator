@@ -38,14 +38,17 @@ function setTape(m, word, t = 0) {
   Array.from(word).forEach((ch, i) => { if (ch.trim() && ch !== m.blank) tape.cells[i] = ch; });
 }
 
-/* the non-blank part of a tape as text, with blanks between symbols */
-function tapeString(t) {
-  const cells = M.tapes[t].cells, indexes = Object.keys(cells).map(Number);
+/* the part of a tape that holds symbols, as text, with blanks between them */
+function tapeText(tape) {
+  const indexes = Object.keys(tape.cells).map(Number);
   if (!indexes.length) return '';
   let text = '';
-  for (let i = Math.min(...indexes); i <= Math.max(...indexes); i++) text += cells[i] ?? M.blank;
+  for (let i = Math.min(...indexes); i <= Math.max(...indexes); i++) text += tape.cells[i] ?? M.blank;
   return text;
 }
+const tapeString = t => tapeText(M.tapes[t]);
+
+const copyTapes = tapes => tapes.map(t => ({ cells: { ...t.cells }, head: t.head }));
 
 /* ---------- reading a saved machine (JSON from the browser or from the Save / load box) ---------- */
 
