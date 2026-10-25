@@ -9,14 +9,14 @@ Live demo: https://strawndri.github.io/turing-machine-simulator/
 
 ## Features
 
-- Draw the state diagram: add states, drag from one to another to create transitions, bend them and rotate loops; select several items with a rectangle to move or delete them at once;
-- Rules in the `[read; write; move]` format, with `L` (left), `R` (right) and `S` (stay) moves;
-- From 1 to 4 tapes, each one can be read only; rules become `[a, b; a, b; R, S]`;
-- Define the tape alphabet Γ and the blank symbol;
-- Non-deterministic machines with δ0 and δ1: step through the computation tree level by level, see every branch and its tape, and draw the tree, with the same pan and zoom as the diagram;
-- Step by step or continuous run, with speed control; the current state and rule are highlighted;
-- Undo and redo, save and load as JSON, save or copy the diagram and the computation tree as PNG, and ready-made examples;
-- Portuguese and English interface, and two themes (light and dark).
+- Draw state diagrams: add states, link them, bend arrows and move groups;
+- Rules as `[read; write; move]`, with `L` (left), `R` (right) and `S` (stay);
+- 1 to 4 tapes, and each one can be read only;
+- Editable tape alphabet Γ and blank symbol;
+- Non-deterministic machines (δ0 and δ1) with a computation tree;
+- Step by step or continuous run, with speed control;
+- Undo and redo, JSON save and load, PNG export, and ready-made examples;
+- Portuguese and English, light and dark themes.
 
 The machine you draw is saved in your browser (localStorage).
 
@@ -29,12 +29,12 @@ The machine you draw is saved in your browser (localStorage).
 
 ## Options
 
-- **Top bar:** `Examples` loads ready-made machines; the language menu switches between Portuguese and English; the theme menu switches between light and dark; `Save / load` copies the machine as JSON or loads one you pasted;
-- **Diagram toolbar:** `Select`, `+ State`, `Transition` and `Pan` change the tool; `Undo` and `Redo` go through your changes; `−`, `Fit` and `+` zoom; `Save PNG` and `Copy PNG` export what you see;
-- **Side panel:** edit the selected state (name, initial, final) or transition (its rules, one `[read; write; move]` per row);
-- **Tapes panel:** `−` and `+` set the number of tapes (1 to 4, each one can be read only); `Blank` sets the blank symbol; the Γ list is the tape alphabet; each tape has its own input box, and you can also type on the cells and move the head;
-- **Non-deterministic:** tick the box to give each rule a `δ0` or `δ1` and explore the computation tree level by level; `Diagram` and `Tree` switch the view, and the side panel lists every branch;
-- **Run controls:** `Step`, `Run` and `Reset`, plus a speed slider.
+- **Top bar:** examples, language, theme and `Save / load`;
+- **Diagram toolbar:** tools, undo and redo, zoom and PNG export;
+- **Side panel:** edit the selected state or transition;
+- **Tapes panel:** number of tapes, blank symbol, alphabet Γ and tape input;
+- **Non-deterministic:** a box to use `δ0` and `δ1`, and the `Diagram` and `Tree` views;
+- **Run controls:** `Step`, `Run`, `Reset` and speed.
 
 ## Shortcuts
 
