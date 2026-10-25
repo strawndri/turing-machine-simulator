@@ -1,68 +1,448 @@
-/* tapes */
-.tape-panel{background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:14px;display:grid;gap:10px;--chip:var(--run);--on-chip:var(--on-run)}
-.tape-panel[data-status="accepted"]{--chip:var(--ok)}
-.tape-panel[data-status="rejected"],.tape-panel[data-status="limit"]{--chip:var(--bad)}
-.tape-panel[data-status="accepted"],.tape-panel[data-status="rejected"],.tape-panel[data-status="limit"]{--on-chip:var(--panel)}
-.tape-top{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
-.tape-top .left{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
-.counter{display:flex;gap:4px;align-items:center}
-.counter output{min-width:64px;text-align:center}
-.tag{font-size:12px;border:1px solid var(--line);border-radius:3px;padding:0 8px;color:var(--muted)}
-.tag.live{border-color:var(--run);color:var(--run)}
-.tape-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.tape-tools label{display:flex;gap:6px;align-items:center;color:var(--muted);font-size:12px}
-#blank{width:38px;text-align:center}
-.gamma{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center}
-.gamma .gl{font-weight:700}
-.gchips{display:inline-flex;flex-wrap:wrap;gap:5px}
-.gchip{display:inline-flex;align-items:center;gap:2px;border:1px solid var(--line);border-radius:3px;padding:0 3px 0 8px;background:var(--soft)}
-.gchip.blank{padding-right:8px;border-style:dashed;background:transparent;color:var(--muted)}
-.gchip button{all:unset;cursor:pointer;color:var(--muted);padding:0 4px;font-size:13px;line-height:1.4}
-.gchip button:hover{color:var(--bad)}
-.gchip button:focus-visible{outline:2px solid var(--sel)}
-#g-add{width:132px;padding:2px 8px}
-.gamma .btn{padding:2px 9px;font-size:12.5px}
+/* The panel under the diagram: tapes, alphabet Γ, run controls and the status line. */
 
-.tapes{display:grid;gap:10px;align-content:start}
-.tape-block{display:grid;gap:2px}
-.tb-head{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
-.tb-name{font-weight:700;color:var(--muted);min-width:56px}
-.tb-head .inp{width:min(210px,40vw);padding:2px 8px}
-.tb-head .check{font-size:12px;color:var(--muted)}
-.tapes:not(.multi) .tb-head .check,.tapes:not(.multi) .tb-name{display:none}
-.tape-scroll{display:flex;align-items:flex-start;gap:8px;overflow-x:auto;padding:2px 2px 6px}
-.strip{display:flex;flex:none}
-.padbtn{flex:none;align-self:center;margin-top:10px;writing-mode:vertical-rl;height:50px;padding:3px 5px;font:inherit;font-size:11px;border:1px dashed var(--line);border-radius:3px;background:none;color:var(--muted);cursor:pointer}
-.padbtn:hover{color:var(--ink);border-color:var(--sel)}
-.col{display:flex;flex-direction:column;align-items:center;width:42px;flex:none}
-.slot{height:32px;width:100%;background:none;border:0;padding:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px;color:var(--chip)}
-.slot .chip{display:none;font:700 12px/1.3 var(--font);background:var(--chip);color:var(--on-chip);border-radius:3px;padding:0 6px;white-space:nowrap}
-.slot .tri{width:0;height:0;border:5px solid transparent;border-top-color:currentColor;border-bottom:0;opacity:0}
-.slot:hover .tri,.slot:focus-visible .tri{opacity:.45}
-.col.head .chip{display:block}
-.col.head .tri{opacity:1}
-.cell{width:100%;height:42px;border:1px solid var(--line);border-right-width:0;border-radius:0;background:var(--tile);color:var(--ink);text-align:center;font:700 18px var(--font);padding:0;caret-color:transparent}
-.col:first-child .cell{border-radius:3px 0 0 3px}
-.col:last-child .cell{border-right-width:1px;border-radius:0 3px 3px 0}
-.cell::placeholder{color:var(--muted);opacity:.35;font-weight:400}
-.cell:focus{outline:2px solid var(--sel);outline-offset:-2px;position:relative;z-index:2;background:var(--sel-soft)}
-.col.head .cell{outline:2px solid var(--chip);outline-offset:-1px;position:relative;z-index:1}
-.col.head .cell:focus{outline-color:var(--sel)}
-.col.wrote .cell{background:var(--run-soft)}
-.cell.out{color:var(--bad);background:var(--bad-soft)}
-.tape-block.ro .cell{background:var(--soft)}
-.idx{font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:3px}
-.controls{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center}
-.controls .grp{display:flex;gap:6px}
-.speed{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:12px}
-.speed input{width:120px;accent-color:var(--sel)}
-.speed output{min-width:96px;color:var(--ink)}
-.status{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;flex:1 1 320px;min-width:0}
-.pill{font-weight:700;font-size:12px;padding:0 9px;border:1px solid var(--line);border-radius:3px;color:var(--muted)}
-.pill.playing{background:var(--run-soft);border-color:var(--run);color:var(--run)}
-.pill.paused{background:var(--sel-soft);border-color:var(--sel);color:var(--sel)}
-.pill.accepted{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
-.pill.rejected,.pill.limit{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
-.facts{color:var(--muted)}
-.facts b{color:var(--ink);font-weight:700}
-.msg{flex-basis:100%;margin:0;font-size:12px;color:var(--muted);min-height:1.5em;overflow-wrap:anywhere}
+/* ---------- Panel and status colors ---------- */
+
+.tape-panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+  --chip: var(--run);
+  --on-chip: var(--on-run);
+}
+
+.tape-panel[data-status="accepted"] {
+  --chip: var(--ok);
+}
+
+.tape-panel[data-status="rejected"],
+.tape-panel[data-status="limit"] {
+  --chip: var(--bad);
+}
+
+.tape-panel[data-status="accepted"],
+.tape-panel[data-status="rejected"],
+.tape-panel[data-status="limit"] {
+  --on-chip: var(--panel);
+}
+
+/* ---------- Top row: tape count and blank symbol ---------- */
+
+.tape-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tape-top .left {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+}
+
+.counter {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.counter output {
+  min-width: 64px;
+  text-align: center;
+}
+
+.tag {
+  font-size: 12px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 0 8px;
+  color: var(--muted);
+}
+
+.tag.live {
+  border-color: var(--run);
+  color: var(--run);
+}
+
+.tape-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.tape-tools label {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+#blank {
+  width: 38px;
+  text-align: center;
+}
+
+/* ---------- Alphabet Γ ---------- */
+
+.gamma {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  align-items: center;
+}
+
+.gamma .gl {
+  font-weight: 700;
+}
+
+.gchips {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.gchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 0 3px 0 8px;
+  background: var(--soft);
+}
+
+.gchip.blank {
+  padding-right: 8px;
+  border-style: dashed;
+  background: transparent;
+  color: var(--muted);
+}
+
+.gchip button {
+  all: unset;
+  cursor: pointer;
+  color: var(--muted);
+  padding: 0 4px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.gchip button:hover {
+  color: var(--bad);
+}
+
+.gchip button:focus-visible {
+  outline: 2px solid var(--sel);
+}
+
+#g-add {
+  width: 132px;
+  padding: 2px 8px;
+}
+
+.gamma .btn {
+  padding: 2px 9px;
+  font-size: 12.5px;
+}
+
+/* ---------- Tape blocks ---------- */
+
+.tapes {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.tape-block {
+  display: grid;
+  gap: 2px;
+}
+
+.tb-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  align-items: center;
+}
+
+.tb-name {
+  font-weight: 700;
+  color: var(--muted);
+  min-width: 56px;
+}
+
+.tb-head .inp {
+  width: min(210px, 40vw);
+  padding: 2px 8px;
+}
+
+.tb-head .check {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.tapes:not(.multi) .tb-head .check,
+.tapes:not(.multi) .tb-name {
+  display: none;
+}
+
+/* ---------- Strip of cells ---------- */
+
+.tape-scroll {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 2px 6px;
+}
+
+.strip {
+  display: flex;
+  flex: none;
+}
+
+.padbtn {
+  flex: none;
+  align-self: center;
+  margin-top: 10px;
+  writing-mode: vertical-rl;
+  height: 50px;
+  padding: 3px 5px;
+  font: inherit;
+  font-size: 11px;
+  border: 1px dashed var(--line);
+  border-radius: 3px;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.padbtn:hover {
+  color: var(--ink);
+  border-color: var(--sel);
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 42px;
+  flex: none;
+}
+
+.slot {
+  height: 32px;
+  width: 100%;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  color: var(--chip);
+}
+
+.slot .chip {
+  display: none;
+  font: 700 12px/1.3 var(--font);
+  background: var(--chip);
+  color: var(--on-chip);
+  border-radius: 3px;
+  padding: 0 6px;
+  white-space: nowrap;
+}
+
+.slot .tri {
+  width: 0;
+  height: 0;
+  border: 5px solid transparent;
+  border-top-color: currentColor;
+  border-bottom: 0;
+  opacity: 0;
+}
+
+.slot:hover .tri,
+.slot:focus-visible .tri {
+  opacity: 0.45;
+}
+
+.col.head .chip {
+  display: block;
+}
+
+.col.head .tri {
+  opacity: 1;
+}
+
+/* ---------- Cells ---------- */
+
+.cell {
+  width: 100%;
+  height: 42px;
+  border: 1px solid var(--line);
+  border-right-width: 0;
+  border-radius: 0;
+  background: var(--tile);
+  color: var(--ink);
+  text-align: center;
+  font: 700 18px var(--font);
+  padding: 0;
+  caret-color: transparent;
+}
+
+.col:first-child .cell {
+  border-radius: 3px 0 0 3px;
+}
+
+.col:last-child .cell {
+  border-right-width: 1px;
+  border-radius: 0 3px 3px 0;
+}
+
+.cell::placeholder {
+  color: var(--muted);
+  opacity: 0.35;
+  font-weight: 400;
+}
+
+.cell:focus {
+  outline: 2px solid var(--sel);
+  outline-offset: -2px;
+  position: relative;
+  z-index: 2;
+  background: var(--sel-soft);
+}
+
+.col.head .cell {
+  outline: 2px solid var(--chip);
+  outline-offset: -1px;
+  position: relative;
+  z-index: 1;
+}
+
+.col.head .cell:focus {
+  outline-color: var(--sel);
+}
+
+.col.wrote .cell {
+  background: var(--run-soft);
+}
+
+.cell.out {
+  color: var(--bad);
+  background: var(--bad-soft);
+}
+
+.tape-block.ro .cell {
+  background: var(--soft);
+}
+
+.idx {
+  font-size: 10.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  margin-top: 3px;
+}
+
+/* ---------- Run controls and status ---------- */
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  align-items: center;
+}
+
+.controls .grp {
+  display: flex;
+  gap: 6px;
+}
+
+.speed {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.speed input {
+  width: 120px;
+  accent-color: var(--sel);
+}
+
+.speed output {
+  min-width: 96px;
+  color: var(--ink);
+}
+
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  align-items: center;
+  flex: 1 1 320px;
+  min-width: 0;
+}
+
+.pill {
+  font-weight: 700;
+  font-size: 12px;
+  padding: 0 9px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  color: var(--muted);
+}
+
+.pill.playing {
+  background: var(--run-soft);
+  border-color: var(--run);
+  color: var(--run);
+}
+
+.pill.paused {
+  background: var(--sel-soft);
+  border-color: var(--sel);
+  color: var(--sel);
+}
+
+.pill.accepted {
+  background: var(--ok-soft);
+  border-color: var(--ok);
+  color: var(--ok);
+}
+
+.pill.rejected,
+.pill.limit {
+  background: var(--bad-soft);
+  border-color: var(--bad);
+  color: var(--bad);
+}
+
+.facts {
+  color: var(--muted);
+}
+
+.facts b {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.msg {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+  min-height: 1.5em;
+  overflow-wrap: anywhere;
+}

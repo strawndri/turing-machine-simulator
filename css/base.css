@@ -1,45 +1,285 @@
 /* Page layout, buttons and form fields. One monospace font for every text, thin borders, no shadows. */
-*{box-sizing:border-box;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
-body{background:var(--bg);color:var(--ink);font:13.5px/1.55 var(--font);
-  padding-block:16px 24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-button,input,select,textarea{font-family:inherit}
-.app{max-width:1440px;margin:0 auto;display:grid;gap:14px}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-sub{font-size:.72em;line-height:0;vertical-align:-.28em}
 
-.top{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:flex-end;justify-content:space-between}
-.brand{min-width:0}
-h1{margin:0;font:700 22px/1.2 var(--font);color:var(--accent);text-wrap:balance}
-.brand p{margin:2px 0 0;color:var(--muted)}
-.top-actions{display:flex;flex-wrap:wrap;gap:8px}
+/* ---------- Reset and page ---------- */
 
-.btn{font:inherit;color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:3px;padding:4px 10px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
-.btn:hover:not(:disabled){border-color:var(--sel)}
-.btn:disabled{opacity:.4;cursor:default}
-.btn.sm{padding:2px 8px;font-size:12.5px}
-.btn[aria-pressed="true"]{background:var(--sel-soft);border-color:var(--sel);color:var(--sel)}
-.btn.primary{background:var(--sel);border-color:var(--sel);color:var(--on-sel);font-weight:700}
-.btn.danger{color:var(--bad)}
-.btn.danger:hover:not(:disabled){border-color:var(--bad)}
-.btn:focus-visible,.cell:focus-visible,.slot:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.link:focus-visible{outline:2px solid var(--sel);outline-offset:1px}
-kbd{font:inherit;font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:3px;padding:0 4px}
-select,input[type=text],textarea{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:4px 8px}
-select{cursor:pointer}
+* {
+  box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
 
-.work{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px;align-items:start}
-.board{position:relative;height:clamp(400px,60vh,680px);border:1px solid var(--line);border-radius:3px;overflow:hidden;background:var(--canvas)}
-#svg{display:block;width:100%;height:100%;touch-action:none;user-select:none;-webkit-user-select:none}
-.board[data-tool="state"] #svg{cursor:crosshair}
-.board[data-tool="edge"] #svg{cursor:alias}
-.board[data-tool="pan"] #svg,.board.shift-pan #svg{cursor:grab}
-#svg.panning,#svg.panning *{cursor:grabbing !important}
-.marquee{fill:var(--sel);fill-opacity:.1;stroke:var(--sel);stroke-width:1;stroke-dasharray:4 3;vector-effect:non-scaling-stroke;pointer-events:none}
-.toolbar{position:absolute;top:10px;left:10px;right:10px;display:flex;flex-wrap:wrap;gap:8px;pointer-events:none;z-index:2}
-.toolbar .grp{pointer-events:auto;display:flex;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:2px}
-.toolbar .btn{background:transparent;border-color:transparent;padding:3px 9px}
-.toolbar .btn[aria-pressed="true"]{background:var(--sel-soft);border-color:var(--sel)}
-.toolbar .btn:hover:not(:disabled){border-color:var(--line)}
-.hint{position:absolute;left:14px;bottom:10px;right:14px;margin:0;color:var(--muted);font-size:12px;pointer-events:none;text-wrap:balance}
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font: 13.5px/1.55 var(--font);
+  padding-block: 16px 24px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
 
-.foot{text-align:center;font-size:11.5px;color:var(--muted)}
-.foot a{color:inherit}
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+.app {
+  max-width: 1440px;
+  margin: 0 auto;
+  display: grid;
+  gap: 14px;
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+sub {
+  font-size: 0.72em;
+  line-height: 0;
+  vertical-align: -0.28em;
+}
+
+/* ---------- Header ---------- */
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.brand {
+  min-width: 0;
+}
+
+h1 {
+  margin: 0;
+  font: 700 22px/1.2 var(--font);
+  color: var(--accent);
+  text-wrap: balance;
+}
+
+.brand p {
+  margin: 2px 0 0;
+  color: var(--muted);
+}
+
+.top-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ---------- Buttons ---------- */
+
+.btn {
+  font: inherit;
+  color: var(--ink);
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 4px 10px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.btn:hover:not(:disabled) {
+  border-color: var(--sel);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.btn.sm {
+  padding: 2px 8px;
+  font-size: 12.5px;
+}
+
+.btn[aria-pressed="true"] {
+  background: var(--sel-soft);
+  border-color: var(--sel);
+  color: var(--sel);
+}
+
+.btn.primary {
+  background: var(--sel);
+  border-color: var(--sel);
+  color: var(--on-sel);
+  font-weight: 700;
+}
+
+.btn.danger {
+  color: var(--bad);
+}
+
+.btn.danger:hover:not(:disabled) {
+  border-color: var(--bad);
+}
+
+.btn:focus-visible,
+.cell:focus-visible,
+.slot:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+.link:focus-visible {
+  outline: 2px solid var(--sel);
+  outline-offset: 1px;
+}
+
+/* ---------- Keys and form fields ---------- */
+
+kbd {
+  font: inherit;
+  font-size: 11px;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 0 4px;
+}
+
+select,
+input[type=text],
+textarea {
+  font: inherit;
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 4px 8px;
+}
+
+select {
+  cursor: pointer;
+}
+
+/* ---------- Diagram board and side panel ---------- */
+
+.work {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 330px;
+  gap: 14px;
+  align-items: start;
+}
+
+.board {
+  position: relative;
+  height: clamp(400px, 60vh, 680px);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--canvas);
+}
+
+#svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.board[data-tool="state"] #svg {
+  cursor: crosshair;
+}
+
+.board[data-tool="edge"] #svg {
+  cursor: alias;
+}
+
+.board[data-tool="pan"] #svg,
+.board.shift-pan #svg {
+  cursor: grab;
+}
+
+#svg.panning,
+#svg.panning * {
+  cursor: grabbing !important;
+}
+
+.marquee {
+  fill: var(--sel);
+  fill-opacity: 0.1;
+  stroke: var(--sel);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+/* ---------- Toolbar and hint over the diagram ---------- */
+
+.toolbar {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.toolbar .grp {
+  pointer-events: auto;
+  display: flex;
+  gap: 2px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 2px;
+}
+
+.toolbar .btn {
+  background: transparent;
+  border-color: transparent;
+  padding: 3px 9px;
+}
+
+.toolbar .btn[aria-pressed="true"] {
+  background: var(--sel-soft);
+  border-color: var(--sel);
+}
+
+.toolbar .btn:hover:not(:disabled) {
+  border-color: var(--line);
+}
+
+.hint {
+  position: absolute;
+  left: 14px;
+  bottom: 10px;
+  right: 14px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  pointer-events: none;
+  text-wrap: balance;
+}
+
+/* ---------- Footer ---------- */
+
+.foot {
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.foot a {
+  color: inherit;
+}

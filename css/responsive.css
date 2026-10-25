@@ -1,18 +1,70 @@
 /* Narrow screens stack the panels; wide ones fit the whole app in the window. */
-@media (max-width:900px){
-  .work{grid-template-columns:minmax(0,1fr)}
-  .inspector{max-height:none}
-  .board{height:clamp(380px,62vh,560px)}
-  kbd{display:none}
+
+/* Narrow screens: one column, and the board gets its own height */
+@media (max-width: 900px) {
+  .work {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .inspector {
+    max-height: none;
+  }
+
+  .board {
+    height: clamp(380px, 62vh, 560px);
+  }
+
+  kbd {
+    display: none;
+  }
 }
-@media (min-width:901px) and (min-height:600px){
-  html,body{height:100%}
-  body{padding-block:12px}
-  .app{height:100%;grid-template-rows:auto minmax(0,1fr) auto auto;gap:10px}
-  .work{min-height:0;grid-template-rows:minmax(0,1fr);align-items:stretch}
-  .board{height:100%;min-height:0}
-  .inspector{height:100%;max-height:none}
-  h1{font-size:20px}
-  .tape-panel{padding:10px 14px;gap:8px;max-height:56vh;grid-template-rows:auto auto minmax(0,1fr) auto}
-  .tapes{overflow-y:auto;min-height:0}
+
+/* Wide and tall screens: the whole app fits the window, the panels share the height */
+@media (min-width: 901px) and (min-height: 600px) {
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    padding-block: 12px;
+  }
+
+  .app {
+    height: 100%;
+    grid-template-rows: auto minmax(0, 1fr) auto auto;
+    gap: 10px;
+  }
+
+  .work {
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .board {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .inspector {
+    height: 100%;
+    max-height: none;
+  }
+
+  h1 {
+    font-size: 20px;
+  }
+
+  .tape-panel {
+    padding: 10px 14px;
+    gap: 8px;
+    max-height: 56vh;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+  }
+
+  .tapes {
+    overflow-y: auto;
+    min-height: 0;
+  }
 }

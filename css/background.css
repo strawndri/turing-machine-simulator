@@ -1,6 +1,37 @@
-/* faint machine drawings in the side margins (see index.html) */
-.bg{position:fixed;top:0;height:100%;aspect-ratio:260/1080;z-index:-1;pointer-events:none;color:var(--ink);opacity:.07;fill:none;stroke:currentColor;stroke-width:1.2}
-.bg text{fill:currentColor;stroke:none;font:400 20px var(--font);text-anchor:middle}
-.bg-l{left:0}
-.bg-r{right:0}
-@media (max-width:1100px){.bg{display:none}}
+/* Very faint line drawings of a Turing machine in the side margins of wide screens (the SVGs are in index.html). */
+
+.bg {
+  position: fixed;
+  top: 0;
+  height: 100%;
+  aspect-ratio: 260/1080;
+  z-index: -1;
+  pointer-events: none;
+  color: var(--ink);
+  opacity: 0.07;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.2;
+}
+
+.bg text {
+  fill: currentColor;
+  stroke: none;
+  font: 400 20px var(--font);
+  text-anchor: middle;
+}
+
+.bg-l {
+  left: 0;
+}
+
+.bg-r {
+  right: 0;
+}
+
+/* Without side margins there is nothing to draw */
+@media (max-width: 1100px) {
+  .bg {
+    display: none;
+  }
+}

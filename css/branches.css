@@ -1,35 +1,186 @@
-/* non-deterministic mode: tree view, configuration list, delta selector */
-.fline{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--muted)}
-.fline select{padding:2px 6px;background:var(--panel)}
-.edge.d1 .line{stroke-dasharray:6 4}
-.toolbar .grp.nd-only{display:none}
-.board.nd .toolbar .grp.nd-only{display:flex}
-.board[data-view="tree"] .grp.tools,.board[data-view="tree"] .grp.hist{display:none}
-.tree{position:absolute;inset:0;overflow:hidden;display:none}
-.board[data-view="tree"] .tree{display:block}
-.board[data-view="tree"] #svg,.board[data-view="tree"] .hint{display:none}
-.tree-empty{position:absolute;top:58px;left:16px;margin:0;color:var(--muted);max-width:60ch}
-#tsvg{display:block;width:100%;height:100%;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
-#tsvg.panning,#tsvg.panning *{cursor:grabbing !important}
-.tn{cursor:pointer}
-.tn rect{fill:var(--panel);stroke:var(--ink);stroke-width:1.2}
-.tn.active rect{fill:var(--run-soft);stroke:var(--run)}
-.tn.accepted rect{fill:var(--ok-soft);stroke:var(--ok)}
-.tn.halted rect{fill:var(--bad-soft);stroke:var(--bad)}
-.tn.onpath rect{stroke:var(--sel);stroke-width:1.8}
-.tn.selected rect{stroke:var(--sel);stroke-width:3}
-.tn text{font:12px var(--font);fill:var(--ink);pointer-events:none}
-.tn .tn-s{font-weight:700}
-.tn .tn-t{fill:var(--muted)}
-.te{fill:none;stroke:var(--muted);stroke-width:1.2}
-.te.d1{stroke-dasharray:5 4}
-.te.path{stroke:var(--sel);stroke-width:1.8}
-.te-l{font:11px var(--font);fill:var(--muted)}
-.confs .link{gap:6px 10px}
-.confs .link.on{background:var(--sel-soft);border-color:var(--sel)}
-.confs .cid{color:var(--muted);font-size:12px}
-.confs .ctape{font-size:12.5px;color:var(--muted)}
-.confs .cst{margin-left:auto;font-size:12px}
-.confs .accepted .cst{color:var(--ok)}
-.confs .halted .cst{color:var(--bad)}
-.confs .active .cst{color:var(--run)}
+/* Non-deterministic mode: the δ0 / δ1 choice of a rule, the view buttons, the computation tree and the branch list. */
+
+/* ---------- Rule function and view buttons ---------- */
+
+.fline {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.fline select {
+  padding: 2px 6px;
+  background: var(--panel);
+}
+
+.edge.d1 .line {
+  stroke-dasharray: 6 4;
+}
+
+.toolbar .grp.nd-only {
+  display: none;
+}
+
+.board.nd .toolbar .grp.nd-only {
+  display: flex;
+}
+
+.board[data-view="tree"] .grp.tools,
+.board[data-view="tree"] .grp.hist {
+  display: none;
+}
+
+/* ---------- Computation tree view ---------- */
+
+.tree {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  display: none;
+}
+
+.board[data-view="tree"] .tree {
+  display: block;
+}
+
+.board[data-view="tree"] #svg,
+.board[data-view="tree"] .hint {
+  display: none;
+}
+
+.tree-empty {
+  position: absolute;
+  top: 58px;
+  left: 16px;
+  margin: 0;
+  color: var(--muted);
+  max-width: 60ch;
+}
+
+#tsvg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+
+#tsvg.panning,
+#tsvg.panning * {
+  cursor: grabbing !important;
+}
+
+/* ---------- Tree nodes ---------- */
+
+.tn {
+  cursor: pointer;
+}
+
+.tn rect {
+  fill: var(--panel);
+  stroke: var(--ink);
+  stroke-width: 1.2;
+}
+
+.tn.active rect {
+  fill: var(--run-soft);
+  stroke: var(--run);
+}
+
+.tn.accepted rect {
+  fill: var(--ok-soft);
+  stroke: var(--ok);
+}
+
+.tn.halted rect {
+  fill: var(--bad-soft);
+  stroke: var(--bad);
+}
+
+.tn.onpath rect {
+  stroke: var(--sel);
+  stroke-width: 1.8;
+}
+
+.tn.selected rect {
+  stroke: var(--sel);
+  stroke-width: 3;
+}
+
+.tn text {
+  font: 12px var(--font);
+  fill: var(--ink);
+  pointer-events: none;
+}
+
+.tn .tn-s {
+  font-weight: 700;
+}
+
+.tn .tn-t {
+  fill: var(--muted);
+}
+
+/* ---------- Tree links ---------- */
+
+.te {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.2;
+}
+
+.te.d1 {
+  stroke-dasharray: 5 4;
+}
+
+.te.path {
+  stroke: var(--sel);
+  stroke-width: 1.8;
+}
+
+.te-l {
+  font: 11px var(--font);
+  fill: var(--muted);
+}
+
+/* ---------- Branch list in the side panel ---------- */
+
+.confs .link {
+  gap: 6px 10px;
+}
+
+.confs .link.on {
+  background: var(--sel-soft);
+  border-color: var(--sel);
+}
+
+.confs .cid {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.confs .ctape {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.confs .cst {
+  margin-left: auto;
+  font-size: 12px;
+}
+
+.confs .accepted .cst {
+  color: var(--ok);
+}
+
+.confs .halted .cst {
+  color: var(--bad);
+}
+
+.confs .active .cst {
+  color: var(--run);
+}
