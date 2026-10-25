@@ -13,6 +13,7 @@ Live demo: https://strawndri.github.io/turing-machine-simulator/
 - Rules in the `[read; write; move]` format, with `L` (left), `R` (right) and `S` (stay) moves;
 - From 1 to 4 tapes, each one can be read only; rules become `[a, b; a, b; R, S]`;
 - Define the tape alphabet Γ and the blank symbol;
+- Non-deterministic machines with δ0 and δ1: step through the computation tree level by level, see every branch and its tape, and draw the tree;
 - Step by step or continuous run, with speed control; the current state and rule are highlighted;
 - Undo and redo, save and load as JSON, and ready-made examples;
 - Portuguese and English interface, and two themes (light and dark).

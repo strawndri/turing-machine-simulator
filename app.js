@@ -21,11 +21,12 @@ const hasGroup = () => group.s.size + group.e.size > 0;
 const clearGroup = () => { group = { s: new Set(), e: new Set() }; };
 let view = { x: 0, y: 0, k: 1 }, drag = null, ignoreUp = false, fitted = false;
 let run = null, playing = false, timer = 0, speed = 4, notice = '';
+let nrun = null, selNode = null, ndView = 'diagram', treeZ = 1;
 let blocks = [], builtK = 0, forceBuild = true, cursor = [], pads = [], ranges = [];
 let undoStack = [], redoStack = [], lastKey = null, lastT = 0;
 
 const newTape = () => ({ cells: {}, head: 0, ro: false });
-const blankMachine = () => ({ states: [], edges: [], blank: 'B', gamma: ['B'], k: 1, tapes: [newTape()], seq: 1 });
+const blankMachine = () => ({ states: [], edges: [], blank: 'B', gamma: ['B'], k: 1, nd: false, tapes: [newTape()], seq: 1 });
 const inG = c => M.gamma.includes(c);
 const S = id => M.states.find(s => s.id === id);
 const E = id => M.edges.find(e => e.id === id);
@@ -34,7 +35,7 @@ const symAt = (cells, i) => cells[i] ?? M.blank;
 const tapeData = t => (run ? run.tapes : M.tapes)[t];
 const ruleText = r => {
   const j = a => a.map(x => x || '·').join(', ');
-  return `[${j(r.r)}; ${j(r.w)}; ${r.d.join(', ')}]`;
+  return `${M.nd ? 'δ' + (r.f | 0) + ' ' : ''}[${j(r.r)}; ${j(r.w)}; ${r.d.join(', ')}]`;
 };
 const nameHtml = n => { const a = Array.from(n); return a.length > 1 ? `${esc(a[0])}<sub>${esc(a.slice(1).join(''))}</sub>` : esc(n); };
 const nameSvg = n => { const a = Array.from(n); return a.length > 1 ? `${esc(a[0])}<tspan class="sub" dy="5">${esc(a.slice(1).join(''))}</tspan>` : esc(n); };
@@ -63,7 +64,7 @@ function examples(name) {
   const st = (nm, x, y, o = {}) => { const s = { id: 's' + m.seq++, name: nm, x, y, initial: !!o.initial, final: !!o.final }; m.states.push(s); return s.id; };
   const ed = (a, b, rules, o = {}) => m.edges.push({
     id: 'e' + m.seq++, from: a, to: b, bend: o.bend || 0, angle: o.angle ?? -90,
-    rules: rules.map(([r, w, d]) => ({ r: [].concat(r), w: [].concat(w), d: [].concat(d) }))
+    rules: rules.map(([r, w, d, f]) => ({ r: [].concat(r), w: [].concat(w), d: [].concat(d), f: f === 1 ? 1 : 0 }))
   });
   if (name === 'abc') {
     const q0 = st('q0', 130, 180, { initial: true }), q1 = st('q1', 340, 180), qN = st('qN', 550, 180), q2 = st('q2', 780, 180);
@@ -138,6 +139,14 @@ function examples(name) {
     m.k = 2; m.tapes = [newTape(), newTape()];
     setTape(m, '10#11', 0);
     m.gamma = ['0', '1', '#', 'B'];
+  } else if (name === 'nd') {
+    const q0 = st('q0', 160, 200, { initial: true }), q1 = st('q1', 430, 200), q2 = st('q2', 700, 200, { final: true });
+    ed(q0, q0, [['0', '0', 'R'], ['1', '1', 'R']]);
+    ed(q0, q1, [['1', '1', 'R', 1]]);
+    ed(q1, q2, [['1', '1', 'R']]);
+    m.nd = true;
+    setTape(m, '0110');
+    m.gamma = ['0', '1', 'B'];
   }
   return m;
 }
@@ -149,6 +158,7 @@ function parseMachine(o) {
   const src = Array.isArray(o.tapes) ? o.tapes : (o.tape && typeof o.tape === 'object' ? [o.tape] : []);
   const k = clamp(Number.isInteger(o.k) ? o.k : (src.length || 1), 1, MAXK);
   m.k = k;
+  m.nd = !!o.nd;
   m.tapes = Array.from({ length: k }, (_, i) => {
     const s = src[i] || {}, tp = newTape();
     tp.head = Number.isInteger(s.head) ? s.head : 0;
@@ -178,7 +188,8 @@ function parseMachine(o) {
       rules: e.rules.map(r => ({
         r: Array.from({ length: k }, (_, i) => sym(r?.r, i, m.blank)),
         w: Array.from({ length: k }, (_, i) => sym(r?.w, i, m.blank)),
-        d: Array.from({ length: k }, (_, i) => { const a = Array.isArray(r?.d) ? r.d : [r?.d]; return ['L', 'R', 'S'].includes(a[i]) ? a[i] : (i ? 'S' : 'R'); })
+        d: Array.from({ length: k }, (_, i) => { const a = Array.isArray(r?.d) ? r.d : [r?.d]; return ['L', 'R', 'S'].includes(a[i]) ? a[i] : (i ? 'S' : 'R'); }),
+        f: r?.f === 1 ? 1 : 0
       }))
     });
   }
@@ -205,7 +216,7 @@ function checkpoint(key) {
 function restore(json) {
   M = JSON.parse(json);
   clearGroup();
-  pause(); run = null; notice = ''; pending = null; lastKey = null; forceBuild = true;
+  clearRun(); notice = ''; pending = null; lastKey = null; forceBuild = true;
   if (sel && !(sel.kind === 'state' ? S(sel.id) : E(sel.id))) sel = null;
   renderAll(); save();
 }
@@ -299,7 +310,7 @@ function renderCanvas() {
     const g = geom(e);
     const isSel = (sel && sel.kind === 'edge' && sel.id === e.id) || group.e.has(e.id);
     const act = run && run.last && run.last.e === e.id;
-    const cls = (isSel ? ' sel' : '') + (act ? ' act' : '');
+    const cls = (isSel ? ' sel' : '') + (act ? ' act' : '') + (M.nd && e.rules.every(r => r.f === 1) ? ' d1' : '');
     lines += `<g class="edge${cls}" data-kind="edge" data-id="${e.id}"><path class="hit" d="${g.path}"/><path class="line" d="${g.path}"/><polygon class="tip" points="${g.arrow}"/></g>`;
     const y0 = g.L.y - (g.k - 1) * 8 + 5;
     const tsp = e.rules.map((r, i) => `<tspan x="${g.L.x.toFixed(1)}"${i ? ' dy="16"' : ''}${act && run.last.r === i ? ' class="on"' : ''}>${esc(ruleText(r))}</tspan>`).join('');
@@ -343,7 +354,7 @@ function nextName() {
   for (let i = 0; ; i++) if (!used.has('q' + i)) return 'q' + i;
 }
 function newRule() {
-  return { r: Array(M.k).fill(''), w: Array(M.k).fill(''), d: Array.from({ length: M.k }, (_, i) => (i ? 'S' : 'R')) };
+  return { r: Array(M.k).fill(''), w: Array(M.k).fill(''), d: Array.from({ length: M.k }, (_, i) => (i ? 'S' : 'R')), f: 0 };
 }
 function addState(p) {
   checkpoint();
@@ -503,13 +514,20 @@ function renderToolbar() {
   document.querySelectorAll('#toolbar [data-tool]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.tool === tool)));
   document.querySelector('#toolbar [data-act="undo"]').disabled = !undoStack.length;
   document.querySelector('#toolbar [data-act="redo"]').disabled = !redoStack.length;
+  board.classList.toggle('nd', !!M.nd);
+  board.dataset.view = M.nd ? ndView : 'diagram';
+  document.querySelectorAll('#toolbar [data-view]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === board.dataset.view)));
+  $('#nd').checked = !!M.nd;
 }
 $('#toolbar').addEventListener('click', ev => {
   const b = ev.target.closest('button'); if (!b) return;
   if (b.dataset.tool) return setTool(b.dataset.tool);
-  const a = b.dataset.act;
+  if (b.dataset.view) return setView(b.dataset.view);
+  const a = b.dataset.act, tv = board.dataset.view === 'tree';
   if (a === 'undo') undo(); else if (a === 'redo') redo();
-  else if (a === 'fit') fit(); else if (a === 'zoomin') zoomAt(1.2); else if (a === 'zoomout') zoomAt(1 / 1.2);
+  else if (a === 'fit') { if (tv) treeFit(); else fit(); }
+  else if (a === 'zoomin') { if (tv) treeZoom(1.2); else zoomAt(1.2); }
+  else if (a === 'zoomout') { if (tv) treeZoom(1 / 1.2); else zoomAt(1 / 1.2); }
 });
 
 function deleteSel() {
@@ -518,7 +536,7 @@ function deleteSel() {
     const gs = group.s, ge = group.e;
     M.edges = M.edges.filter(e => !ge.has(e.id) && !gs.has(e.from) && !gs.has(e.to));
     M.states = M.states.filter(s => !gs.has(s.id));
-    if (run) { if (gs.size) { pause(); run = null; } else if (run.last && ge.has(run.last.e)) run.last = null; }
+    if (run) { if (gs.size) { clearRun(); } else if (run.last && ge.has(run.last.e)) run.last = null; }
     clearGroup(); sel = null; renderAll(); save();
     return;
   }
@@ -528,7 +546,7 @@ function deleteSel() {
     const id = sel.id;
     M.edges = M.edges.filter(e => e.from !== id && e.to !== id);
     M.states = M.states.filter(s => s.id !== id);
-    if (run) { pause(); run = null; }
+    if (run) { clearRun(); }
   } else {
     const id = sel.id;
     if (run && run.last && run.last.e === id) run.last = null;
@@ -572,7 +590,8 @@ function ruleRows(r, i) {
       ${t === 0 ? `<button class="icon" type="button" data-del-rule="${i}" aria-label="${esc(tr('ariaDelRule', i))}" ${canDel ? '' : 'disabled'}>×</button>` : '<span></span>'}
     </div>`;
   }
-  return multi ? `<div class="rcard">${rows}</div>` : rows;
+  const fsel = M.nd ? `<div class="fline"><label for="rf-${i}">${tr('fn_label')}</label><select id="rf-${i}" data-f="f" aria-label="${esc(tr('ariaFn', i))}"><option value="0"${r.f ? '' : ' selected'}>δ0</option><option value="1"${r.f ? ' selected' : ''}>δ1</option></select></div>` : '';
+  return multi || M.nd ? `<div class="rcard">${fsel}${rows}</div>` : rows;
 }
 function renderInspector() {
   if (sel && !(sel.kind === 'state' ? S(sel.id) : E(sel.id))) sel = null;
@@ -580,6 +599,7 @@ function renderInspector() {
     insp.innerHTML = `<h2>${tr('h_group')}</h2><p class="big">${tr('group_counts', group.s.size, group.e.size)}</p><p class="note">${tr('group_note')}</p><button class="btn danger" type="button" data-act="delete">${tr('del_group')}</button>`;
     return;
   }
+  if (!sel && M.nd && nrun) { insp.innerHTML = ndPanelHtml(); return; }
   if (!sel) {
     const rows = tr('shortcuts').map(([k, a]) => `<tr><td>${esc(k)}</td><td>${esc(a)}</td></tr>`).join('');
     insp.innerHTML = `<h2>${tr('how_title')}</h2><ol class="help">${tr('help').map(h => `<li>${h}</li>`).join('')}</ol><h2>${tr('shortcuts_title')}</h2><table class="keys">${rows}</table><p class="note">${tr('saved_note')}</p>`;
@@ -607,6 +627,7 @@ function renderInspector() {
       <div class="rule head">${multi ? `<span>${tr('col_tape')}</span>` : ''}<span>${tr('col_read')}</span><span>${tr('col_write')}</span><span>${tr('col_move')}</span><span></span></div>
       ${e.rules.map(ruleRows).join('')}
     </div>
+    ${M.nd && fnConflict(e) ? `<p class="err">${tr('fn_conflict')}</p>` : ''}
     <button class="btn" type="button" data-act="add-rule">${tr('add_rule')}</button>
     <p class="note">${tr('edge_note', multi, esc(M.blank))}</p>
     <button class="btn danger" type="button" data-act="delete">${tr('del_edge')}</button>`;
@@ -650,6 +671,10 @@ insp.addEventListener('change', ev => {
     if (t.id === 'insp-initial') { M.states.forEach(x => { x.initial = false; }); s.initial = t.checked; }
     else s.final = t.checked;
     renderCanvas(); renderTapes(); renderStatus(); save();
+  } else if (t.dataset.f === 'f') {
+    const e = E(sel.id);
+    checkpoint(); e.rules[+t.id.slice(3)].f = +t.value;
+    renderCanvas(); renderInspector(); save();
   } else if (t.dataset.f === 'd') {
     const row = t.closest('.rule'), e = E(sel.id);
     checkpoint(); e.rules[+row.dataset.ri].d[+row.dataset.t] = t.value; renderCanvas(); save();
@@ -657,6 +682,7 @@ insp.addEventListener('change', ev => {
 });
 insp.addEventListener('click', ev => {
   const b = ev.target.closest('button'); if (!b) return;
+  if (b.dataset.node !== undefined) return selectNode(+b.dataset.node);
   if (b.dataset.go) { sel = { kind: 'edge', id: b.dataset.go }; renderInspector(); renderCanvas(); return; }
   if (b.dataset.act === 'delete') return deleteSel();
   if (b.dataset.act === 'add-rule') {
@@ -810,7 +836,7 @@ tapesEl.addEventListener('click', ev => {
   else if (a === 'load') loadInput(t);
   else if (a === 'clear') {
     checkpoint(); const tp = M.tapes[t]; tp.cells = {}; tp.head = 0; blocks[t].inp.value = '';
-    pause(); run = null; notice = ''; cursor[t] = null; renderAll(); save();
+    clearRun(); notice = ''; cursor[t] = null; renderAll(); save();
   }
 });
 tapesEl.addEventListener('change', ev => {
@@ -828,7 +854,7 @@ function loadInput(t) {
   if (bad.length) { toast(tr('loadOutside', bad.join(', '))); return; }
   checkpoint();
   setTape(M, str, t);
-  pause(); run = null; notice = ''; cursor[t] = null;
+  clearRun(); notice = ''; cursor[t] = null;
   renderAll(); save(); blocks[t].scroller.scrollLeft = 0;
 }
 $('#blank').addEventListener('input', ev => {
@@ -846,7 +872,7 @@ $('#blank').addEventListener('input', ev => {
 function setK(k) {
   if (k < 1 || k > MAXK || k === M.k) return;
   checkpoint();
-  pause(); run = null; notice = '';
+  clearRun(); notice = '';
   const grew = k > M.k;
   if (k > M.k) {
     while (M.tapes.length < k) M.tapes.push(newTape());
@@ -864,7 +890,7 @@ $('#k-plus').addEventListener('click', () => setK(M.k + 1));
 $('#k-minus').addEventListener('click', () => setK(M.k - 1));
 
 /* ---------- execution ---------- */
-const halted = () => run && ['accepted', 'rejected', 'limit'].includes(run.status);
+const halted = () => (M.nd && nrun ? ndDone() : run && ['accepted', 'rejected', 'limit'].includes(run.status));
 function startRun() {
   const ini = initialState();
   run = { tapes: M.tapes.map(t => ({ cells: { ...t.cells }, head: t.head })), state: ini.id, steps: 0, status: 'ready', last: null, lastWrite: null, msg: '' };
@@ -909,19 +935,23 @@ function stepOnce() {
 function afterStep() { renderCanvas(); renderTapes(); renderStatus(); scrollAll(true); }
 function tick() {
   if (!playing) return;
-  const ok = stepOnce();
-  afterStep();
-  if (!ok) { playing = false; renderStatus(); return; }
+  let more;
+  if (M.nd) { more = stepLevel(); afterNd(); } else { more = stepOnce(); afterStep(); }
+  if (!more) { playing = false; renderStatus(); return; }
   timer = setTimeout(tick, 1000 / speed);
 }
 function pause() { playing = false; clearTimeout(timer); }
-function resetRun() { pause(); run = null; notice = ''; renderAll(); scrollAll(false); }
+function clearRun() { pause(); run = null; nrun = null; selNode = null; autoSel = true; }
+function resetRun() { clearRun(); notice = ''; renderAll(); scrollAll(false); }
 $('#b-reset').addEventListener('click', resetRun);
-$('#b-step').addEventListener('click', () => { pause(); stepOnce(); afterStep(); });
+$('#b-step').addEventListener('click', () => {
+  pause();
+  if (M.nd) { stepLevel(); afterNd(); } else { stepOnce(); afterStep(); }
+});
 $('#b-run').addEventListener('click', () => {
   if (playing) { pause(); renderStatus(); return; }
-  if (halted()) { run = null; }
-  if (!run && !initialState()) { stepOnce(); return; }
+  if (halted()) { clearRun(); }
+  if (!run && !initialState()) { if (M.nd) stepLevel(); else stepOnce(); return; }
   playing = true; renderStatus(); tick();
 });
 $('#speed').addEventListener('input', ev => {
@@ -929,6 +959,7 @@ $('#speed').addEventListener('input', ev => {
 });
 
 function renderStatus() {
+  if (M.nd && nrun) return renderStatusNd();
   const st = run ? S(run.state) : initialState();
   const tps = M.tapes.map((_, t) => tapeData(t));
   const code = !run ? 'idle' : halted() ? run.status : playing ? 'playing' : 'paused';
@@ -940,6 +971,198 @@ function renderStatus() {
   $('#b-run').textContent = tr(playing ? 'pause' : 'run');
   $('#b-step').disabled = !!halted();
 }
+
+/* ---------- non-deterministic mode ---------- */
+const MAXNODES = 2000, MAXLEVEL = 500;
+let autoSel = true;
+const ndDone = () => !!nrun && (!nrun.nodes.some(n => n.status === 'active') || nrun.capped);
+const tapeKey = tp => {
+  const ks = Object.keys(tp.cells).map(Number);
+  if (!ks.length) return '';
+  let s = '';
+  for (let i = Math.min(...ks); i <= Math.max(...ks); i++) s += tp.cells[i] ?? M.blank;
+  return s;
+};
+function tapeView(tp) {
+  const ks = Object.keys(tp.cells).map(Number);
+  let lo = Math.min(tp.head, ...ks), hi = Math.max(tp.head, ...ks);
+  if (hi - lo > 11) { lo = Math.max(lo, tp.head - 5); hi = Math.min(hi, tp.head + 5); }
+  let s = '';
+  for (let i = lo; i <= hi; i++) { const c = tp.cells[i] ?? M.blank; s += i === tp.head ? `[${c}]` : c; }
+  return s;
+}
+function ndStats() {
+  const leaves = nrun.nodes.filter(n => n.status !== 'expanded');
+  const fin = leaves.filter(n => n.status === 'accepted' || n.status === 'halted');
+  return {
+    nodes: nrun.nodes.length, leaves: leaves.length,
+    accepted: leaves.filter(n => n.status === 'accepted').length,
+    halted: leaves.filter(n => n.status === 'halted').length,
+    active: leaves.filter(n => n.status === 'active').length,
+    finished: fin.length,
+    distinct: new Set(fin.map(n => n.tapes.map(tapeKey).join('|'))).size
+  };
+}
+function fnConflict(e) {
+  const seen = new Set();
+  for (const x of M.edges) if (x.from === e.from) for (const r of x.rules) {
+    const k = (r.f | 0) + '|' + r.r.join(',');
+    if (seen.has(k)) return true;
+    seen.add(k);
+  }
+  return false;
+}
+function ndMatch(node, f) {
+  const syms = node.tapes.map(t => symAt(t.cells, t.head));
+  for (const e of M.edges) {
+    if (e.from !== node.state) continue;
+    for (let ri = 0; ri < e.rules.length; ri++) {
+      const r = e.rules[ri];
+      if ((r.f | 0) !== f) continue;
+      const ok = syms.every((c, i) => r.r[i] && inG(r.r[i]) && r.r[i] === c && (M.tapes[i].ro || (r.w[i] && inG(r.w[i]))));
+      if (ok) return { e, ri, r };
+    }
+  }
+  return null;
+}
+function ndApply(node, m, f) {
+  const { e, ri, r } = m;
+  const tapes = node.tapes.map((tp, i) => {
+    const cells = { ...tp.cells };
+    let head = tp.head;
+    if (!M.tapes[i].ro) { if (r.w[i] === M.blank) delete cells[head]; else cells[head] = r.w[i]; }
+    head += r.d[i] === 'L' ? -1 : r.d[i] === 'R' ? 1 : 0;
+    return { cells, head };
+  });
+  const id = nrun.nodes.length;
+  nrun.nodes.push({ id, parent: node.id, level: node.level + 1, state: e.to, tapes, status: S(e.to).final ? 'accepted' : 'active', via: { e: e.id, r: ri, f }, children: [] });
+  node.children.push(id);
+}
+function syncRun() {
+  if (!nrun) { run = null; return; }
+  const n = nrun.nodes[selNode ?? 0] || nrun.nodes[0], via = n.via;
+  run = {
+    tapes: n.tapes, state: n.state, steps: n.level, lastWrite: null,
+    status: n.status === 'accepted' ? 'accepted' : n.status === 'halted' ? 'rejected' : 'ready',
+    last: via ? { e: via.e, r: via.r } : null,
+    msg: tr('nd_msg', n.level, via ? via.f : null, tr('nd_st_' + n.status))
+  };
+}
+function firstLeaf() {
+  let n = nrun.nodes[0];
+  while (n.children.length) n = nrun.nodes[n.children[0]];
+  return n.id;
+}
+function ndStart() {
+  const ini = initialState();
+  nrun = { nodes: [{ id: 0, parent: null, level: 0, state: ini.id, tapes: M.tapes.map(t => ({ cells: { ...t.cells }, head: t.head })), status: ini.final ? 'accepted' : 'active', via: null, children: [] }], level: 0, capped: false };
+  selNode = 0; autoSel = true;
+  syncRun();
+}
+/* one step for every active branch (one level of the computation tree); true while there is more to explore */
+function stepLevel() {
+  if (!nrun) {
+    if (!initialState()) { notice = tr('noInitial'); renderStatus(); return false; }
+    ndStart();
+  }
+  const frontier = nrun.nodes.filter(n => n.status === 'active');
+  if (!frontier.length) return false;
+  if (nrun.level >= MAXLEVEL) { nrun.capped = true; return false; }
+  for (const n of frontier) {
+    const ms = [ndMatch(n, 0), ndMatch(n, 1)], k = ms.filter(Boolean).length;
+    if (!k) { n.status = 'halted'; continue; }
+    if (nrun.nodes.length + k > MAXNODES) { nrun.capped = true; break; }
+    n.status = 'expanded';
+    ms.forEach((m, f) => { if (m) ndApply(n, m, f); });
+  }
+  nrun.level++;
+  if (autoSel) selNode = firstLeaf();
+  syncRun();
+  return !ndDone();
+}
+function afterNd() {
+  renderCanvas(); renderTapes(); renderStatus(); renderTree();
+  if (!sel && !hasGroup()) renderInspector();
+  scrollAll(true);
+}
+function selectNode(id) {
+  selNode = id; autoSel = false;
+  syncRun(); afterNd();
+}
+function ndPanelHtml() {
+  const s = ndStats(), leaves = nrun.nodes.filter(n => n.status !== 'expanded'), shown = leaves.slice(0, 200);
+  const li = n => `<li><button type="button" class="link conf ${n.status}${n.id === selNode ? ' on' : ''}" data-node="${n.id}"><span class="cid">#${n.id}</span><span>${nameHtml(S(n.state)?.name ?? '?')}</span><span class="ctape">${esc(tapeView(n.tapes[0]))}</span><span class="cst">${tr('nd_st_' + n.status)}</span></button></li>`;
+  return `<h2>${tr('nd_conf')}</h2>
+    <p class="note">${tr('nd_summary', s)}</p>
+    <ul class="list confs">${shown.map(li).join('')}</ul>
+    ${leaves.length > shown.length ? `<p class="note">${tr('nd_more', leaves.length - shown.length)}</p>` : ''}`;
+}
+function renderStatusNd() {
+  const s = ndStats(), done = ndDone();
+  const code = done ? (s.accepted ? 'accepted' : nrun.capped ? 'limit' : 'rejected') : playing ? 'playing' : 'paused';
+  panel.dataset.status = code;
+  $('#status').innerHTML = `<span class="pill ${code}">${tr('st_' + code)}</span>
+    <span class="facts">${tr('nd_level')} <b>${nrun.level}</b> · ${tr('nd_nodes')} <b>${s.nodes}</b> · ${tr('nd_leaves')} <b>${s.leaves}</b> · ${tr('nd_accepting')} <b>${s.accepted}</b> · ${tr('nd_active')} <b>${s.active}</b></span>
+    <p class="msg">${esc(nrun.capped ? tr('nd_capped', MAXNODES, MAXLEVEL) : run ? run.msg : '') || '&nbsp;'}</p>`;
+  $('#b-run').textContent = tr(playing ? 'pause' : 'run');
+  $('#b-step').disabled = done;
+}
+
+/* computation tree: root on the left, one column per level, leaves stacked */
+const TW = 132, TH = 44, GX = 56, GY = 12;
+function treeLayout() {
+  const pos = new Map();
+  let row = 0;
+  const place = id => {
+    const n = nrun.nodes[id], x = 16 + n.level * (TW + GX);
+    if (!n.children.length) { pos.set(id, { x, y: 16 + row * (TH + GY) }); row++; return; }
+    n.children.forEach(place);
+    pos.set(id, { x, y: (pos.get(n.children[0]).y + pos.get(n.children[n.children.length - 1]).y) / 2 });
+  };
+  place(0);
+  let W = 0, H = 0;
+  pos.forEach(p => { W = Math.max(W, p.x + TW + 16); H = Math.max(H, p.y + TH + 16); });
+  return { pos, W, H };
+}
+function renderTree() {
+  const empty = $('#tree-empty'), ts = $('#tsvg');
+  const has = M.nd && nrun;
+  empty.hidden = !!has;
+  ts.style.display = has ? 'block' : 'none';
+  if (!has || board.dataset.view !== 'tree') return;
+  const { pos, W, H } = treeLayout();
+  const path = new Set();
+  for (let id = selNode ?? 0; id !== null; id = nrun.nodes[id].parent) path.add(id);
+  let edges = '', nodes = '';
+  for (const n of nrun.nodes) {
+    const p = pos.get(n.id);
+    for (const cid of n.children) {
+      const c = nrun.nodes[cid], q = pos.get(cid), x0 = p.x + TW, y0 = p.y + TH / 2, x1 = q.x, y1 = q.y + TH / 2, mx = (x0 + x1) / 2;
+      edges += `<path class="te${c.via.f ? ' d1' : ''}${path.has(cid) ? ' path' : ''}" d="M${x0} ${y0}C${mx} ${y0} ${mx} ${y1} ${x1} ${y1}"/><text class="te-l" x="${mx}" y="${(y0 + y1) / 2 - 4}" text-anchor="middle">δ${c.via.f}</text>`;
+    }
+    const st = S(n.state);
+    nodes += `<g class="tn ${n.status}${n.id === selNode ? ' selected' : ''}${path.has(n.id) ? ' onpath' : ''}" data-node="${n.id}" transform="translate(${p.x} ${p.y})"><rect width="${TW}" height="${TH}" rx="3"/><text class="tn-s" x="8" y="17">${esc(st ? st.name : '?')}</text><text class="tn-t" x="8" y="35">${esc(tapeView(n.tapes[0]))}${M.k > 1 ? ' …' : ''}</text></g>`;
+  }
+  ts.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  ts.setAttribute('width', (W * treeZ).toFixed(0));
+  ts.setAttribute('height', (H * treeZ).toFixed(0));
+  ts.innerHTML = edges + nodes;
+}
+function treeZoom(f) { treeZ = clamp(treeZ * f, .25, 2.5); renderTree(); }
+function treeFit() {
+  if (!nrun) return;
+  const c = $('#tree'), { W, H } = treeLayout();
+  treeZ = clamp(Math.min((c.clientWidth - 24) / W, (c.clientHeight - 70) / H, 1), .25, 2.5);
+  renderTree();
+}
+function setView(v) { ndView = v; renderToolbar(); renderTree(); }
+$('#tsvg').addEventListener('click', ev => { const g = ev.target.closest('[data-node]'); if (g) selectNode(+g.dataset.node); });
+$('#nd').addEventListener('change', ev => {
+  checkpoint();
+  M.nd = ev.target.checked; ndView = 'diagram';
+  clearRun(); notice = '';
+  renderAll(); save();
+});
 
 /* ---------- alphabet Γ ---------- */
 function renderGamma() {
@@ -986,7 +1209,7 @@ $('#io-load').addEventListener('click', () => {
 function applyMachine(m) {
   checkpoint();
   M = m; sel = null; clearGroup(); pending = null; forceBuild = true;
-  pause(); run = null; notice = '';
+  clearRun(); notice = '';
   renderAll(); fit(); save(); scrollAll(false);
 }
 $('#examples').addEventListener('change', ev => {
@@ -998,7 +1221,7 @@ $('#examples').addEventListener('change', ev => {
 
 /* ---------- start ---------- */
 function renderAll() {
-  renderCanvas(); renderInspector(); renderTapes(); renderStatus(); renderToolbar();
+  renderToolbar(); renderCanvas(); renderInspector(); renderTapes(); renderStatus(); renderTree();
   $('#blank').value = M.blank;
   renderGamma();
 }

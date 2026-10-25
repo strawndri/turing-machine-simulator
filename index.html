@@ -65,6 +65,7 @@
         <option value="copy" data-i18n="ex_copy"></option>
         <option value="copy2" data-i18n="ex_copy2"></option>
         <option value="soma" data-i18n="ex_soma"></option>
+        <option value="nd" data-i18n="ex_nd"></option>
         <option value="vazio" data-i18n="ex_vazio"></option>
       </select>
       <label for="lang" class="sr" data-i18n="lang_label"></label>
@@ -84,13 +85,17 @@
   <main class="work">
     <section class="board" id="board" data-tool="select" data-i18n-aria="board_aria">
       <div class="toolbar" id="toolbar">
-        <div class="grp" role="group" data-i18n-aria="tools_aria">
+        <div class="grp nd-only" role="group" data-i18n-aria="views_aria">
+          <button class="btn" type="button" data-view="diagram" aria-pressed="true" data-i18n="view_diagram"></button>
+          <button class="btn" type="button" data-view="tree" aria-pressed="false" data-i18n="view_tree"></button>
+        </div>
+        <div class="grp tools" role="group" data-i18n-aria="tools_aria">
           <button class="btn" type="button" data-tool="select" aria-pressed="true"><span data-i18n="tool_select"></span> <kbd>V</kbd></button>
           <button class="btn" type="button" data-tool="state" aria-pressed="false"><span data-i18n="tool_state"></span> <kbd>E</kbd></button>
           <button class="btn" type="button" data-tool="edge" aria-pressed="false"><span data-i18n="tool_edge"></span> <kbd>T</kbd></button>
           <button class="btn" type="button" data-tool="pan" aria-pressed="false"><span data-i18n="tool_pan"></span> <kbd>H</kbd></button>
         </div>
-        <div class="grp" role="group" data-i18n-aria="hist_aria">
+        <div class="grp hist" role="group" data-i18n-aria="hist_aria">
           <button class="btn" type="button" data-act="undo" data-i18n="undo" data-i18n-title="undo_title"></button>
           <button class="btn" type="button" data-act="redo" data-i18n="redo" data-i18n-title="redo_title"></button>
         </div>
@@ -104,6 +109,10 @@
         <g id="vp"></g>
       </svg>
       <p class="hint" id="hint"></p>
+      <div class="tree" id="tree">
+        <p class="tree-empty" id="tree-empty" data-i18n="tree_empty"></p>
+        <svg id="tsvg" role="img" data-i18n-aria="tree_aria"></svg>
+      </div>
     </section>
     <aside class="inspector" id="inspector" aria-live="polite"></aside>
   </main>
@@ -120,6 +129,7 @@
         <span class="tag" id="tape-tag"></span>
       </div>
       <div class="tape-tools">
+        <label class="check" for="nd"><input type="checkbox" id="nd"> <span data-i18n="nd_label"></span></label>
         <label for="blank"><span data-i18n="blank"></span> <input type="text" id="blank" maxlength="1" autocomplete="off" spellcheck="false"></label>
         <button class="btn sm" type="button" id="b-gohead" data-i18n="goto_heads"></button>
       </div>
