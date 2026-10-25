@@ -52,6 +52,4 @@ A máquina que você desenha fica salva no navegador (localStorage).
 | `Ctrl` + roda do mouse, ou pinça no touchpad | Zoom (diagrama e árvore) |
 | `Esc` | Cancelar |
 
-## Licença
-
-[MIT](LICENSE). Copyright © 2026 Andrieli Gonçalves (alg24@inf.ufpr.br).
+Licenciado sob a [Licença MIT](LICENSE).

@@ -52,6 +52,4 @@ The machine you draw is saved in your browser (localStorage).
 | `Ctrl` + mouse wheel, or pinch on the touchpad | Zoom (diagram and tree) |
 | `Esc` | Cancel |
 
-## License
-
-[MIT](LICENSE). Copyright © 2026 Andrieli Gonçalves (alg24@inf.ufpr.br).
+Licensed under the [MIT License](LICENSE).
