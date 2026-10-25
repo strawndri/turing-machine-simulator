@@ -238,8 +238,8 @@ select{cursor:pointer}
 .fline{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--muted)}
 .fline select{padding:2px 6px;background:var(--panel)}
 .edge.d1 .line{stroke-dasharray:6 4}
-.nd-only{display:none}
-.board.nd .nd-only{display:flex}
+.toolbar .grp.nd-only{display:none}
+.board.nd .toolbar .grp.nd-only{display:flex}
 .board[data-view="tree"] .grp.tools,.board[data-view="tree"] .grp.hist{display:none}
 .tree{position:absolute;inset:0;overflow:auto;padding:58px 12px 12px;display:none}
 .board[data-view="tree"] .tree{display:block}

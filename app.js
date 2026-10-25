@@ -1158,8 +1158,9 @@ function treeFit() {
 function setView(v) { ndView = v; renderToolbar(); renderTree(); }
 $('#tsvg').addEventListener('click', ev => { const g = ev.target.closest('[data-node]'); if (g) selectNode(+g.dataset.node); });
 $('#nd').addEventListener('change', ev => {
+  const on = ev.target.checked;
   checkpoint();
-  M.nd = ev.target.checked; ndView = 'diagram';
+  M.nd = on; ndView = 'diagram';
   clearRun(); notice = '';
   renderAll(); save();
 });
