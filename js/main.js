@@ -35,7 +35,7 @@ try { savedLang = localStorage.getItem(LANG_KEY); savedTheme = localStorage.getI
 lang = savedLang in I18N ? savedLang : 'en';
 setTheme(savedTheme);
 applyStatic();
-M = loadSaved() || examples('abc');
+M = loadSaved() || buildExample('abc');
 renderAll();
 new ResizeObserver(() => {
   if (!fitted && svg.getBoundingClientRect().width > 0) { fitted = true; fit(); scrollAll(false); }

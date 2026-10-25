@@ -23,6 +23,6 @@ function applyMachine(m) {
 $('#examples').addEventListener('change', ev => {
   const v = ev.target.value; ev.target.value = '';
   if (!v) return;
-  applyMachine(v === 'vazio' ? blankMachine() : examples(v));
+  applyMachine(buildExample(v));
   toast(tr('exLoaded'));
 });
