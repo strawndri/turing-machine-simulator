@@ -15,7 +15,7 @@ Demo: https://strawndri.github.io/turing-machine-simulator/
 - Defina o alfabeto da fita Γ e o símbolo em branco;
 - Máquinas não determinísticas com δ0 e δ1: avance a árvore de computações nível por nível, veja cada ramo e a sua fita, e desenhe a árvore;
 - Execução passo a passo ou contínua, com controle de velocidade; o estado e a regra atuais ficam destacados;
-- Desfazer e refazer, salvar e carregar em JSON, e exemplos prontos;
+- Desfazer e refazer, salvar e carregar em JSON, salvar ou copiar o diagrama e a árvore de computações em PNG, e exemplos prontos;
 - Interface em português e em inglês, e dois temas (claro e escuro).
 
 A máquina que você desenha fica salva no navegador (localStorage).

@@ -15,7 +15,7 @@ Live demo: https://strawndri.github.io/turing-machine-simulator/
 - Define the tape alphabet Γ and the blank symbol;
 - Non-deterministic machines with δ0 and δ1: step through the computation tree level by level, see every branch and its tape, and draw the tree;
 - Step by step or continuous run, with speed control; the current state and rule are highlighted;
-- Undo and redo, save and load as JSON, and ready-made examples;
+- Undo and redo, save and load as JSON, save or copy the diagram and the computation tree as PNG, and ready-made examples;
 - Portuguese and English interface, and two themes (light and dark).
 
 The machine you draw is saved in your browser (localStorage).
