@@ -1,0 +1,21 @@
+/* Colors and fonts. Light uses Dracula hues in pastel tones, dark uses Dracula.
+   Everything else reads these variables, so a theme is just a new block of values. */
+:root{
+  --font:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+  /* light: Dracula hues in pastel tones */
+  --bg:#F1EFF8; --panel:#FBFAFE; --canvas:#FBFAFE; --soft:#ECE9F6; --tile:#FBFAFE;
+  --ink:#2F3142; --muted:#6B6F8F; --line:#D9D5EA;
+  --accent:#B84C8C; --sel:#7F63C7; --sel-soft:#E4DCF7; --on-sel:#FFFFFF;
+  --run:#B2661F; --run-soft:#FBE6CF; --on-run:#FFFFFF;
+  --ok:#2F8A50; --ok-soft:#D8F1E0; --bad:#D2514F; --bad-soft:#FBDDE0;
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  /* dark: Dracula */
+  --bg:#21222C; --panel:#282A36; --canvas:#282A36; --soft:#343746; --tile:#282A36;
+  --ink:#F8F8F2; --muted:#8B98C6; --line:#44475A;
+  --accent:#FF79C6; --sel:#BD93F9; --sel-soft:#44475A; --on-sel:#282A36;
+  --run:#FFB86C; --run-soft:#4F4640; --on-run:#282A36;
+  --ok:#50FA7B; --ok-soft:#2E4A3B; --bad:#FF5555; --bad-soft:#4F3142;
+  color-scheme:dark;
+}
