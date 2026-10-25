@@ -13,7 +13,7 @@ Demo: https://strawndri.github.io/turing-machine-simulator/
 - Regras no formato `[ler; escrever; mover]`, com movimentos `L` (esquerda), `R` (direita) e `S` (estático);
 - De 1 a 4 fitas, e cada uma pode ser somente leitura; as regras viram `[a, b; a, b; R, S]`;
 - Defina o alfabeto da fita Γ e o símbolo em branco;
-- Máquinas não determinísticas com δ0 e δ1: avance a árvore de computações nível por nível, veja cada ramo e a sua fita, e desenhe a árvore;
+- Máquinas não determinísticas com δ0 e δ1: avance a árvore de computações nível por nível, veja cada ramo e a sua fita, e desenhe a árvore, com o mesmo movimento e zoom do diagrama;
 - Execução passo a passo ou contínua, com controle de velocidade; o estado e a regra atuais ficam destacados;
 - Desfazer e refazer, salvar e carregar em JSON, salvar ou copiar o diagrama e a árvore de computações em PNG, e exemplos prontos;
 - Interface em português e em inglês, e dois temas (claro e escuro).
@@ -27,6 +27,13 @@ A máquina que você desenha fica salva no navegador (localStorage).
 3. Clique numa célula da fita e digite, ou escreva uma palavra no campo de entrada e clique em `Carregar`;
 4. Clique em `Passo` ou `Executar`.
 
+## Máquinas não determinísticas
+
+1. Marque `Não determinística` ao lado das fitas. Cada regra ganha um seletor `δ0` ou `δ1`, e as setas `δ1` ficam tracejadas;
+2. `Passo` avança um nível da árvore de computações. `Executar` explora todos os ramos, até 2000 nós;
+3. Use `Árvore` para ver a árvore. Clique num nó, ou num ramo da lista ao lado, para ver o seu estado e a sua fita;
+4. `Salvar PNG` e `Copiar PNG` exportam o que você está vendo, o diagrama ou a árvore.
+
 ## Atalhos
 
 | Atalho | Ação |
@@ -35,12 +42,12 @@ A máquina que você desenha fica salva no navegador (localStorage).
 | `E` | Novo estado |
 | `T` | Nova transição |
 | `H` | Mover a tela |
-| `Shift` + arrastar | Mover a tela |
-| Rolar com dois dedos (touchpad) | Mover a tela |
+| `Shift` + arrastar | Mover a tela (diagrama e árvore) |
+| Rolar com dois dedos (touchpad) | Mover a tela (diagrama e árvore) |
 | Arrastar no espaço vazio | Selecionar vários itens |
 | `Delete` | Apagar a seleção |
 | `Ctrl+Z` / `Ctrl+Shift+Z` | Desfazer / refazer |
-| `Ctrl` + roda do mouse, ou pinça no touchpad | Zoom |
+| `Ctrl` + roda do mouse, ou pinça no touchpad | Zoom (diagrama e árvore) |
 | `Esc` | Cancelar |
 
 ## Licença
