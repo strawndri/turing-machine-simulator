@@ -27,12 +27,14 @@ The machine you draw is saved in your browser (localStorage).
 3. Click a tape cell and type, or write a word in the input box and press `Load`;
 4. Press `Step` or `Run`.
 
-## Non-deterministic machines
+## Options
 
-1. Tick `Non-deterministic` next to the tapes. Each rule gets a `δ0` or `δ1` selector, and `δ1` arrows are dashed;
-2. `Step` goes one level down the computation tree. `Run` explores every branch, up to 2000 nodes;
-3. Use `Tree` to see the tree. Click a node, or a branch in the side list, to see its state and tape;
-4. `Save PNG` and `Copy PNG` export what you see, the diagram or the tree.
+- **Top bar:** `Examples` loads ready-made machines; the language menu switches between Portuguese and English; the theme menu switches between light and dark; `Save / load` copies the machine as JSON or loads one you pasted;
+- **Diagram toolbar:** `Select`, `+ State`, `Transition` and `Pan` change the tool; `Undo` and `Redo` go through your changes; `−`, `Fit` and `+` zoom; `Save PNG` and `Copy PNG` export what you see;
+- **Side panel:** edit the selected state (name, initial, final) or transition (its rules, one `[read; write; move]` per row);
+- **Tapes panel:** `−` and `+` set the number of tapes (1 to 4, each one can be read only); `Blank` sets the blank symbol; the Γ list is the tape alphabet; each tape has its own input box, and you can also type on the cells and move the head;
+- **Non-deterministic:** tick the box to give each rule a `δ0` or `δ1` and explore the computation tree level by level; `Diagram` and `Tree` switch the view, and the side panel lists every branch;
+- **Run controls:** `Step`, `Run` and `Reset`, plus a speed slider.
 
 ## Shortcuts
 
@@ -52,6 +54,4 @@ The machine you draw is saved in your browser (localStorage).
 
 ## License
 
-[MIT](LICENSE). Copyright © 2026 Andrieli Gonçalves.
-
-Made by: Andrieli Gonçalves (alg24@inf.ufpr.br)
+[MIT](LICENSE). Copyright © 2026 Andrieli Gonçalves (alg24@inf.ufpr.br).

@@ -27,12 +27,14 @@ A máquina que você desenha fica salva no navegador (localStorage).
 3. Clique numa célula da fita e digite, ou escreva uma palavra no campo de entrada e clique em `Carregar`;
 4. Clique em `Passo` ou `Executar`.
 
-## Máquinas não determinísticas
+## Opções
 
-1. Marque `Não determinística` ao lado das fitas. Cada regra ganha um seletor `δ0` ou `δ1`, e as setas `δ1` ficam tracejadas;
-2. `Passo` avança um nível da árvore de computações. `Executar` explora todos os ramos, até 2000 nós;
-3. Use `Árvore` para ver a árvore. Clique num nó, ou num ramo da lista ao lado, para ver o seu estado e a sua fita;
-4. `Salvar PNG` e `Copiar PNG` exportam o que você está vendo, o diagrama ou a árvore.
+- **Barra do topo:** `Exemplos` carrega máquinas prontas; o menu de idioma alterna entre português e inglês; o menu de tema alterna entre claro e escuro; `Salvar / carregar` copia a máquina em JSON ou carrega uma que você colou;
+- **Barra do diagrama:** `Selecionar`, `+ Estado`, `Transição` e `Mover tela` trocam a ferramenta; `Desfazer` e `Refazer` percorrem as suas mudanças; `−`, `Ajustar` e `+` dão zoom; `Salvar PNG` e `Copiar PNG` exportam o que você vê;
+- **Painel lateral:** edite o estado selecionado (nome, inicial, final) ou a transição (as regras, uma `[ler; escrever; mover]` por linha);
+- **Painel das fitas:** `−` e `+` definem o número de fitas (de 1 a 4, e cada uma pode ser somente leitura); `Branco` define o símbolo em branco; a lista Γ é o alfabeto da fita; cada fita tem o seu campo de entrada, e você também pode digitar nas células e mover a cabeça;
+- **Não determinística:** marque a caixa para dar a cada regra um `δ0` ou `δ1` e explorar a árvore de computações nível por nível; `Diagrama` e `Árvore` alternam a visualização, e o painel lateral lista todos os ramos;
+- **Controles de execução:** `Passo`, `Executar` e `Reiniciar`, mais o controle de velocidade.
 
 ## Atalhos
 
@@ -52,6 +54,4 @@ A máquina que você desenha fica salva no navegador (localStorage).
 
 ## Licença
 
-[MIT](LICENSE). Copyright © 2026 Andrieli Gonçalves.
-
-Feito por: Andrieli Gonçalves (alg24@inf.ufpr.br)
+[MIT](LICENSE). Copyright © 2026 Andrieli Gonçalves (alg24@inf.ufpr.br).
