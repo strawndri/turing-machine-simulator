@@ -21,7 +21,7 @@ const hasGroup = () => group.s.size + group.e.size > 0;
 const clearGroup = () => { group = { s: new Set(), e: new Set() }; };
 let view = { x: 0, y: 0, k: 1 }, drag = null, ignoreUp = false, fitted = false;
 let run = null, playing = false, timer = 0, speed = 4, notice = '';
-let nrun = null, selNode = null, ndView = 'diagram', treeZ = 1;
+let nrun = null, selNode = null, ndView = 'diagram', tview = { x: 0, y: 0, k: 1 }, treeAuto = true;
 let blocks = [], builtK = 0, forceBuild = true, cursor = [], pads = [], ranges = [];
 let undoStack = [], redoStack = [], lastKey = null, lastT = 0;
 
@@ -525,7 +525,7 @@ $('#toolbar').addEventListener('click', ev => {
   if (b.dataset.view) return setView(b.dataset.view);
   const a = b.dataset.act, tv = board.dataset.view === 'tree';
   if (a === 'undo') undo(); else if (a === 'redo') redo();
-  else if (a === 'fit') { if (tv) treeFit(); else fit(); }
+  else if (a === 'fit') { if (tv) { treeAuto = true; treeFit(); } else fit(); }
   else if (a === 'zoomin') { if (tv) treeZoom(1.2); else zoomAt(1.2); }
   else if (a === 'zoomout') { if (tv) treeZoom(1 / 1.2); else zoomAt(1 / 1.2); }
 });
@@ -941,7 +941,7 @@ function tick() {
   timer = setTimeout(tick, 1000 / speed);
 }
 function pause() { playing = false; clearTimeout(timer); }
-function clearRun() { pause(); run = null; nrun = null; selNode = null; autoSel = true; }
+function clearRun() { pause(); run = null; nrun = null; selNode = null; autoSel = true; treeAuto = true; }
 function resetRun() { clearRun(); notice = ''; renderAll(); scrollAll(false); }
 $('#b-reset').addEventListener('click', resetRun);
 $('#b-step').addEventListener('click', () => {
@@ -1124,13 +1124,16 @@ function treeLayout() {
   pos.forEach(p => { W = Math.max(W, p.x + TW + 16); H = Math.max(H, p.y + TH + 16); });
   return { pos, W, H };
 }
+function applyTreeView() {
+  $('#tvp').setAttribute('transform', `translate(${tview.x.toFixed(1)} ${tview.y.toFixed(1)}) scale(${tview.k.toFixed(4)})`);
+}
 function renderTree() {
   const empty = $('#tree-empty'), ts = $('#tsvg');
   const has = M.nd && nrun;
   empty.hidden = !!has;
   ts.style.display = has ? 'block' : 'none';
   if (!has || board.dataset.view !== 'tree') return;
-  const { pos, W, H } = treeLayout();
+  const { pos } = treeLayout();
   const path = new Set();
   for (let id = selNode ?? 0; id !== null; id = nrun.nodes[id].parent) path.add(id);
   let edges = '', nodes = '';
@@ -1143,20 +1146,68 @@ function renderTree() {
     const st = S(n.state);
     nodes += `<g class="tn ${n.status}${n.id === selNode ? ' selected' : ''}${path.has(n.id) ? ' onpath' : ''}" data-node="${n.id}" transform="translate(${p.x} ${p.y})"><rect width="${TW}" height="${TH}" rx="3"/><text class="tn-s" x="8" y="17">${esc(st ? st.name : '?')}</text><text class="tn-t" x="8" y="35">${esc(tapeView(n.tapes[0]))}${M.k > 1 ? ' …' : ''}</text></g>`;
   }
-  ts.setAttribute('viewBox', `0 0 ${W} ${H}`);
-  ts.setAttribute('width', (W * treeZ).toFixed(0));
-  ts.setAttribute('height', (H * treeZ).toFixed(0));
-  ts.innerHTML = edges + nodes;
+  $('#tvp').innerHTML = edges + nodes;
+  if (treeAuto) treeFit(); else applyTreeView();
 }
-function treeZoom(f) { treeZ = clamp(treeZ * f, .25, 2.5); renderTree(); }
+/* same navigation as the diagram: Shift + drag, two-finger scroll, Ctrl + wheel or pinch to zoom */
 function treeFit() {
-  if (!nrun) return;
-  const c = $('#tree'), { W, H } = treeLayout();
-  treeZ = clamp(Math.min((c.clientWidth - 24) / W, (c.clientHeight - 70) / H, 1), .25, 2.5);
-  renderTree();
+  const r = $('#tree').getBoundingClientRect(), { W, H } = treeLayout();
+  if (!r.width) return;
+  const top = 58, gap = 16;
+  const k = clamp(Math.min((r.width - 2 * gap) / W, (r.height - top - gap) / H, 1.2), .1, 3);
+  tview = { k, x: (r.width - W * k) / 2, y: top + (r.height - top - gap - H * k) / 2 };
+  applyTreeView();
 }
+function treeZoomAt(f, cx, cy) {
+  const r = $('#tree').getBoundingClientRect();
+  cx ??= r.width / 2; cy ??= r.height / 2;
+  const k = clamp(tview.k * f, .1, 3), q = k / tview.k;
+  tview = { k, x: cx - (cx - tview.x) * q, y: cy - (cy - tview.y) * q };
+  treeAuto = false;
+  applyTreeView();
+}
+const treeZoom = f => treeZoomAt(f);
 function setView(v) { ndView = v; renderToolbar(); renderTree(); }
-$('#tsvg').addEventListener('click', ev => { const g = ev.target.closest('[data-node]'); if (g) selectNode(+g.dataset.node); });
+const tsvgEl = $('#tsvg');
+let tdrag = null, tjust = false;
+tsvgEl.addEventListener('pointerdown', ev => {
+  if (ev.button && ev.button !== 1) return;
+  tjust = false;
+  tdrag = { id: ev.pointerId, sx: ev.clientX, sy: ev.clientY, vx: tview.x, vy: tview.y, moved: false };
+});
+tsvgEl.addEventListener('pointermove', ev => {
+  if (!tdrag || ev.pointerId !== tdrag.id) return;
+  const dx = ev.clientX - tdrag.sx, dy = ev.clientY - tdrag.sy;
+  if (!tdrag.moved) {
+    if (Math.hypot(dx, dy) < 4) return;
+    tdrag.moved = true; treeAuto = false;
+    try { tsvgEl.setPointerCapture(ev.pointerId); } catch (_) {}
+    tsvgEl.classList.add('panning');
+  }
+  tview.x = tdrag.vx + dx; tview.y = tdrag.vy + dy;
+  applyTreeView();
+});
+const tEnd = () => { tsvgEl.classList.remove('panning'); if (tdrag && tdrag.moved) tjust = true; tdrag = null; };
+tsvgEl.addEventListener('pointerup', tEnd);
+tsvgEl.addEventListener('pointercancel', tEnd);
+tsvgEl.addEventListener('wheel', ev => {
+  ev.preventDefault();
+  if (ev.ctrlKey || ev.metaKey) {
+    const r = tsvgEl.getBoundingClientRect();
+    treeZoomAt(ev.deltaY < 0 ? 1.1 : 1 / 1.1, ev.clientX - r.left, ev.clientY - r.top);
+    return;
+  }
+  const k = ev.deltaMode === 1 ? 16 : 1;
+  tview.x -= ev.deltaX * k; tview.y -= ev.deltaY * k;
+  treeAuto = false;
+  applyTreeView();
+}, { passive: false });
+/* a click right after a drag must not select the node under the pointer */
+tsvgEl.addEventListener('click', ev => {
+  if (tjust) { tjust = false; return; }
+  const g = ev.target.closest('[data-node]');
+  if (g) selectNode(+g.dataset.node);
+});
 $('#nd').addEventListener('change', ev => {
   const on = ev.target.checked;
   checkpoint();
@@ -1197,12 +1248,16 @@ function diagramSvg() {
 }
 function treeSvg() {
   if (!(M.nd && nrun)) return null;
-  const ts = $('#tsvg'), vb = ts.viewBox.baseVal;
-  const out = ts.cloneNode(true);
-  inlineStyles(ts, out);
+  const { W, H } = treeLayout();
+  const g = $('#tvp').cloneNode(true);
+  inlineStyles($('#tvp'), g);
+  g.removeAttribute('transform');
+  const out = document.createElementNS(SVGNS, 'svg');
   out.setAttribute('xmlns', SVGNS);
-  out.setAttribute('width', vb.width); out.setAttribute('height', vb.height);
-  return { svg: out, W: vb.width, H: vb.height };
+  out.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  out.setAttribute('width', W); out.setAttribute('height', H);
+  out.appendChild(g);
+  return { svg: out, W, H };
 }
 /* returns { name, promise } where the promise gives a PNG blob, or null when there is nothing to export */
 function makePng() {
